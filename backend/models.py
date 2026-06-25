@@ -6,8 +6,9 @@ import enum
 
 
 class OperacionEnum(str, enum.Enum):
-    venta   = "venta"
-    alquiler = "alquiler"
+    venta               = "venta"
+    alquiler            = "alquiler"
+    alquiler_temporario = "alquiler_temporario"
 
 
 class TipoEnum(str, enum.Enum):
@@ -16,7 +17,14 @@ class TipoEnum(str, enum.Enum):
     ph           = "ph"
     local        = "local"
     terreno      = "terreno"
+    lote         = "lote"
     oficina      = "oficina"
+
+
+class EstadoEnum(str, enum.Enum):
+    a_estrenar = "a_estrenar"
+    con_uso    = "con_uso"
+    a_reciclar = "a_reciclar"
 
 
 class Propiedad(Base):
@@ -36,6 +44,7 @@ class Propiedad(Base):
     m2:          Mapped[float] = mapped_column(Float, nullable=True)
     lat:         Mapped[float] = mapped_column(Float, nullable=True)
     lng:         Mapped[float] = mapped_column(Float, nullable=True)
+    estado:      Mapped[str]   = mapped_column(String(20), nullable=True)
     imagen:      Mapped[str]   = mapped_column(String(500), nullable=True)
     activa:      Mapped[bool]  = mapped_column(default=True)
     creada_en:   Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

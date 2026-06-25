@@ -40,6 +40,7 @@ class PropiedadOut(BaseModel):
     dormitorios: Optional[int]
     banos:       Optional[int]
     m2:          Optional[float]
+    estado:      Optional[str]
     lat:         Optional[float]
     lng:         Optional[float]
     imagen:      Optional[str]
