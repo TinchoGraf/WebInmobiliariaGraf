@@ -1,21 +1,25 @@
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase
+import os
+from sqlalchemy import create_engine
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-DATABASE_URL = "sqlite+aiosqlite:///./inmobiliaria.db"
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./inmobiliaria.db")
 
-engine = create_async_engine(DATABASE_URL, echo=False)
-AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 class Base(DeclarativeBase):
     pass
 
 
-async def get_db():
-    async with AsyncSessionLocal() as session:
-        yield session
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
-async def init_db():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+def init_db():
+    from models import Propiedad  # noqa: ensure table is registered with Base.metadata
+    Base.metadata.create_all(bind=engine)
