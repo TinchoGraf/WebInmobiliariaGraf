@@ -1,4 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* ───────────────────────────────────────────
+   Componentes CSS — deben ir primero, antes
+   de cualquier regla, para que el spec CSS
+   no los ignore silenciosamente
+─────────────────────────────────────────── */
+@import './components/navbar.css';
+@import './components/hero.css';
+@import './components/quienes-somos.css';
+@import './components/propiedades.css';
+@import './components/mapa.css';
+@import './components/contacto.css';
 
 /* ───────────────────────────────────────────
    Variables globales — sistema de diseño
@@ -171,12 +181,4 @@ input, textarea, select {
   margin-top: var(--spacing-sm);
 }
 
-/* ───────────────────────────────────────────
-   Componentes CSS (importados)
-─────────────────────────────────────────── */
-@import './components/navbar.css';
-@import './components/hero.css';
-@import './components/quienes-somos.css';
-@import './components/propiedades.css';
-@import './components/mapa.css';
-@import './components/contacto.css';
+/* Los @import de componentes están al inicio del archivo (requerido por CSS spec) */
