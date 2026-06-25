@@ -6,8 +6,8 @@ const marcadoresPorId  = {};   // { [propId]: L.Marker }
 /* ── Íconos ──────────────────────────────────── */
 
 function _colorPorOperacion(operacion) {
-  return operacion === 'alquiler'            ? '#2563eb'
-       : operacion === 'alquiler_temporario' ? '#7c3aed'
+  return (operacion === 'alquiler')                                              ? '#2563eb'
+       : (operacion === 'alquiler_temp' || operacion === 'alquiler_temporario') ? '#7c3aed'
        : '#1B4332';
 }
 
@@ -27,8 +27,8 @@ function _iconoNormal(operacion) {
 }
 
 function _iconoResaltado(operacion) {
-  const c = operacion === 'alquiler'            ? '#60a5fa'
-           : operacion === 'alquiler_temporario' ? '#c084fc'
+  const c = (operacion === 'alquiler')                                              ? '#60a5fa'
+           : (operacion === 'alquiler_temp' || operacion === 'alquiler_temporario') ? '#c084fc'
            : '#52b788';
   return L.divIcon({
     className: '',
@@ -47,11 +47,11 @@ function _iconoResaltado(operacion) {
 
 function _crearPopupHtml(prop) {
   const precio    = formatearPrecio(prop.precio, prop.moneda || 'USD');
-  const opLabels  = { venta: 'VENTA', alquiler: 'ALQUILER', alquiler_temporario: 'TEMP.' };
-  const opClasses = { venta: '', alquiler: 'badge--alquiler', alquiler_temporario: 'badge--temp' };
+  const opLabels  = { venta: 'VENTA', alquiler: 'ALQUILER', alquiler_temp: 'TEMP.', alquiler_temporario: 'TEMP.' };
+  const opClasses = { venta: '', alquiler: 'badge--alquiler', alquiler_temp: 'badge--temp', alquiler_temporario: 'badge--temp' };
   const opLabel   = opLabels[prop.operacion] || prop.operacion.toUpperCase();
   const opClass   = opClasses[prop.operacion] || '';
-  const img       = prop.imagen || imagenPlaceholder(240, 140);
+  const img       = (prop.imagenes && prop.imagenes[0]) || imagenPlaceholder(240, 140);
   const wppLink   = typeof generarLinkWhatsApp === 'function' ? generarLinkWhatsApp(prop) : '#';
 
   return `
@@ -60,7 +60,7 @@ function _crearPopupHtml(prop) {
       <div class="map-popup__body">
         <span class="propiedad-card__badge ${opClass}" style="position:static;display:inline-block;margin-bottom:6px;font-size:10px">${opLabel}</span>
         <div class="map-popup__precio">${precio}</div>
-        <div class="map-popup__dir">${prop.ubicacion || ''}</div>
+        <div class="map-popup__dir">${prop.direccion || ''}</div>
         <div class="map-popup__actions">
           <a class="map-popup__btn" href="propiedad.html?id=${prop.id}">Ver más</a>
           <a class="map-popup__btn map-popup__btn--wpp"

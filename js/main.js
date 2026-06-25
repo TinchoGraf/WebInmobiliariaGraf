@@ -30,17 +30,30 @@ async function aplicarFiltros() {
 
   grid.innerHTML = skeletonCards(6);
 
-  const { items, total } = await getPropiedadesConFallback({ ...filtrosActivos });
+  const items = await fetchPropiedades({ ...filtrosActivos });
 
   grid.innerHTML = '';
-  _actualizarContador(total);
+
+  if (items === null) {
+    _actualizarContador(0);
+    grid.innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;color:var(--color-text-muted)">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:1rem;opacity:.4"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <p style="font-size:1.125rem;font-weight:600;margin-bottom:.5rem">Error de conexión</p>
+        <p>Hubo un problema al cargar las propiedades. Intentá de nuevo más tarde.</p>
+      </div>`;
+    actualizarMapa([]);
+    return;
+  }
+
+  _actualizarContador(items.length);
 
   if (!items.length) {
     grid.innerHTML = `
       <div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;color:var(--color-text-muted)">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:1rem;opacity:.4"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <p style="font-size:1.125rem;font-weight:600;margin-bottom:.5rem">Sin resultados</p>
-        <p>Probá con otros filtros.</p>
+        <p>No encontramos propiedades con esos filtros. Probá cambiando los criterios de búsqueda.</p>
       </div>`;
     actualizarMapa([]);
     return;
@@ -70,15 +83,17 @@ const ESTADO_LABELS = {
   a_estrenar: 'A estrenar', con_uso: 'Con uso', a_reciclar: 'A reciclar',
 };
 const OP_LABELS = {
-  venta: 'VENTA', alquiler: 'ALQUILER', alquiler_temporario: 'ALQUILER TEMP.',
+  venta: 'VENTA', alquiler: 'ALQUILER',
+  alquiler_temp: 'ALQUILER TEMP.', alquiler_temporario: 'ALQUILER TEMP.',
 };
 const OP_CLASSES = {
-  venta: '', alquiler: 'badge--alquiler', alquiler_temporario: 'badge--temp',
+  venta: '', alquiler: 'badge--alquiler',
+  alquiler_temp: 'badge--temp', alquiler_temporario: 'badge--temp',
 };
 
 function crearCard(prop) {
   const precio    = formatearPrecio(prop.precio, prop.moneda || 'USD');
-  const img       = prop.imagen || imagenPlaceholder(400, 260);
+  const img       = (prop.imagenes && prop.imagenes[0]) || imagenPlaceholder(400, 260);
   const wppLink   = generarLinkWhatsApp(prop);
   const opLabel   = OP_LABELS[prop.operacion]  || prop.operacion.toUpperCase();
   const opClass   = OP_CLASSES[prop.operacion] || '';
@@ -129,7 +144,7 @@ function crearCard(prop) {
       </div>
       <div class="propiedad-card__ubicacion">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-        ${prop.ubicacion || '—'}
+        ${prop.direccion || '—'}
       </div>
       ${featureItems.length ? `<ul class="propiedad-card__features">${featureItems.join('')}</ul>` : ''}
     </div>
