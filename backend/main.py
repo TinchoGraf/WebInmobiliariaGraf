@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, field_validator
 from sqlalchemy.orm import Session
 
@@ -42,6 +43,8 @@ app.add_middleware(
 
 security = HTTPBasic()
 
+app.mount("/assets", StaticFiles(directory=str(IMAGES_DIR.parent)), name="assets")
+
 
 # ── Auth ─────────────────────────────────────────────────────────────────────
 
@@ -69,8 +72,8 @@ class PropiedadIn(BaseModel):
     moneda:      str = "USD"
     direccion:   str
     barrio:      Optional[str] = None
-    lat:         float
-    lng:         float
+    lat:         Optional[float] = None
+    lng:         Optional[float] = None
 
 
 class PropiedadOut(BaseModel):
@@ -131,9 +134,12 @@ def listar_propiedades(
     precio_min: Optional[float] = Query(None),
     precio_max: Optional[float] = Query(None),
     moneda:     Optional[str]   = Query(None),
+    todas:      bool            = Query(False, description="Si True incluye propiedades inactivas"),
     db: Session = Depends(get_db),
 ):
-    q = db.query(Propiedad).filter(Propiedad.activa == True)  # noqa: E712
+    q = db.query(Propiedad)
+    if not todas:
+        q = q.filter(Propiedad.activa == True)  # noqa: E712
     if operacion:              q = q.filter(Propiedad.operacion == operacion)
     if tipo:                   q = q.filter(Propiedad.tipo == tipo)
     if estado:                 q = q.filter(Propiedad.estado == estado)
