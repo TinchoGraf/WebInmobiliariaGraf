@@ -54,10 +54,10 @@ async function fetchPropiedad(id) {
   }
 }
 
-/* ── Contacto ────────────────────────────────── */
+/* ── Mensajes / Contacto ─────────────────────── */
 
-async function enviarContacto(datos) {
-  return apiFetch('/contacto', {
+async function enviarMensaje(datos) {
+  return apiFetch('/mensajes', {
     method: 'POST',
     body: JSON.stringify(datos),
   });

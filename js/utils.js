@@ -158,16 +158,20 @@ function initCounters() {
 
 /* ── WhatsApp ────────────────────────────────── */
 
-const WPP_NUMERO = '5492284224338'; // reemplazá con el número real
+// Leonardo Graf — número principal para consultas de propiedades
+const WPP_LEONARDO = '5492284224338';
+// Nicolás Graf — corredor inmobiliario
+const WPP_NICOLAS  = '5492284478447';
 
 /**
  * Genera un link de WhatsApp con mensaje pre-cargado para una propiedad.
+ * Usa WPP_LEONARDO como número principal de consulta.
  * @param {{ id: number, titulo: string }} propiedad
  */
 function generarLinkWhatsApp(propiedad) {
   const linkPropiedad = `${window.location.origin}/propiedad.html?id=${propiedad.id}`;
   const mensaje = `Hola, me interesa la propiedad "${propiedad.titulo}" que vi en ${linkPropiedad}, quisiera más información.`;
-  return `https://wa.me/${WPP_NUMERO}?text=${encodeURIComponent(mensaje)}`;
+  return `https://wa.me/${WPP_LEONARDO}?text=${encodeURIComponent(mensaje)}`;
 }
 
 /**

@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initCounters();
   initFiltros();
   initContactForm();
+  initOnboarding();
+  initMapaOficina();
   aplicarFiltros();
 });
 
@@ -320,15 +322,109 @@ function initContactForm() {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    // Ocultar error previo si estaba visible
+    const errEl = document.getElementById('formError');
+    if (errEl) errEl.classList.remove('visible');
+
     const btn = form.querySelector('[type="submit"]');
-    btn.disabled    = true;
-    btn.textContent = 'Enviando…';
+    btn.disabled  = true;
+    btn.innerHTML = '<span class="form-spinner"></span> Enviando…';
 
     const datos = Object.fromEntries(new FormData(form));
-    try { await enviarContacto(datos); } catch { /* demo: siempre muestra éxito */ }
+    const payload = {
+      nombre:   `${datos.nombre || ''} ${datos.apellido || ''}`.trim(),
+      email:    datos.email,
+      telefono: datos.telefono || null,
+      mensaje:  datos.interes
+        ? `[${datos.interes}] ${datos.mensaje}`
+        : datos.mensaje,
+    };
 
-    form.style.display = 'none';
-    document.getElementById('formSuccess').classList.add('visible');
+    try {
+      await enviarMensaje(payload);
+      form.style.display = 'none';
+      document.getElementById('formSuccess').classList.add('visible');
+    } catch {
+      if (errEl) errEl.classList.add('visible');
+      btn.disabled  = false;
+      btn.textContent = 'Enviar mensaje';
+    }
+  });
+}
+
+/* ── Onboarding banner (primer scroll) ───────── */
+
+function initOnboarding() {
+  if (sessionStorage.getItem('lgraf_onboarding_seen')) return;
+  const banner = document.getElementById('onboardingBanner');
+  const closeBtn = document.getElementById('onboardingClose');
+  if (!banner) return;
+
+  const mostrar = () => {
+    banner.classList.add('visible');
+    window.removeEventListener('scroll', mostrar);
+  };
+  window.addEventListener('scroll', mostrar, { passive: true });
+
+  closeBtn?.addEventListener('click', () => {
+    banner.classList.remove('visible');
+    sessionStorage.setItem('lgraf_onboarding_seen', '1');
+  });
+}
+
+/* ── Mini mapa de la oficina ─────────────────── */
+
+const OFICINA_LAT = -36.8866;
+const OFICINA_LNG = -60.3210;
+
+function initMapaOficina() {
+  const el = document.getElementById('mapaOficina');
+  if (!el || typeof L === 'undefined') return;
+
+  const mapa = L.map('mapaOficina', {
+    center:          [OFICINA_LAT, OFICINA_LNG],
+    zoom:            16,
+    zoomControl:     false,
+    scrollWheelZoom: false,
+    dragging:        false,
+    doubleClickZoom: false,
+    attributionControl: false,
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 18,
+  }).addTo(mapa);
+
+  const iconOficina = L.divIcon({
+    className: '',
+    html: `<svg width="38" height="38" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="19" cy="19" r="17" fill="#A00000" stroke="#fff" stroke-width="2.5"/>
+      <text x="19" y="24" text-anchor="middle" font-family="Inter,sans-serif"
+            font-size="12" font-weight="700" fill="#fff">LG</text>
+    </svg>`,
+    iconSize:    [38, 38],
+    iconAnchor:  [19, 19],
+    popupAnchor: [0, -22],
+  });
+
+  L.marker([OFICINA_LAT, OFICINA_LNG], { icon: iconOficina })
+    .bindPopup('<b>Leonardograf Propiedades</b><br>Coronel Suárez 3131, Olavarría')
+    .addTo(mapa);
+
+  // "Ver en mapa" — desktop: scroll a busquedas + setView; mobile: Google Maps
+  document.getElementById('btnVerEnMapa')?.addEventListener('click', () => {
+    if (window.innerWidth < 768) {
+      window.open(`https://maps.google.com/?q=${OFICINA_LAT},${OFICINA_LNG}`, '_blank', 'noopener');
+    } else {
+      document.getElementById('busquedas')?.scrollIntoView({ behavior: 'smooth' });
+      setTimeout(() => {
+        if (typeof mapaInstancia !== 'undefined' && mapaInstancia) {
+          mapaInstancia.setView([OFICINA_LAT, OFICINA_LNG], 17);
+        }
+      }, 600);
+    }
   });
 }
 
