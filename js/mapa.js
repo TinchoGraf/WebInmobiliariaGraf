@@ -1,7 +1,11 @@
 /* mapa.js — mapa Leaflet centrado en Olavarría, Buenos Aires */
 
 let mapaInstancia      = null;
+let marcadorOficina    = null;
 const marcadoresPorId  = {};   // { [propId]: L.Marker }
+
+const OFICINA_LAT = -36.8973565;
+const OFICINA_LNG = -60.3211236;
 
 /* ── Íconos ──────────────────────────────────── */
 
@@ -73,6 +77,41 @@ function _crearPopupHtml(prop) {
     </div>`;
 }
 
+/* ── Marcador oficina ────────────────────────── */
+
+function _agregarMarcadorOficina() {
+  const icon = L.divIcon({
+    className: '',
+    html: `<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="18" fill="#A00000" stroke="#fff" stroke-width="2.5"/>
+      <text x="20" y="25" text-anchor="middle" font-family="Inter,sans-serif"
+            font-size="12" font-weight="700" fill="#fff">LG</text>
+    </svg>`,
+    iconSize:    [40, 40],
+    iconAnchor:  [20, 40],
+    popupAnchor: [0, -44],
+  });
+
+  marcadorOficina = L.marker([OFICINA_LAT, OFICINA_LNG], { icon, zIndexOffset: 1000 })
+    .bindPopup(`
+      <div style="text-align:center;padding:4px 2px;min-width:180px">
+        <strong style="font-size:13px;color:#1A1A1A">Leonardograf Propiedades</strong><br>
+        <span style="font-size:11px;color:#666;line-height:1.6">Coronel Suárez 3131<br>Olavarría, Buenos Aires</span><br>
+        <a href="https://maps.google.com/?q=-36.8973565,-60.3211236"
+           target="_blank" rel="noopener noreferrer"
+           style="font-size:11px;color:#A00000;font-weight:600;text-decoration:none;margin-top:6px;display:inline-block">
+          Ver en Google Maps →
+        </a>
+      </div>`, { maxWidth: 220, className: 'popup-custom' })
+    .addTo(mapaInstancia);
+}
+
+function abrirPopupOficina() {
+  if (!marcadorOficina || !mapaInstancia) return;
+  mapaInstancia.setView([OFICINA_LAT, OFICINA_LNG], 17);
+  marcadorOficina.openPopup();
+}
+
 /* ── Leyenda ─────────────────────────────────── */
 
 function _agregarLeyenda() {
@@ -105,6 +144,7 @@ function initMapa(propiedades = []) {
   }).addTo(mapaInstancia);
 
   agregarMarcadores(propiedades);
+  _agregarMarcadorOficina();
   _agregarLeyenda();
 }
 

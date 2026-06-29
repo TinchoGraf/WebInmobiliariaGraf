@@ -375,20 +375,17 @@ function initOnboarding() {
 
 /* ── Mini mapa de la oficina ─────────────────── */
 
-const OFICINA_LAT = -36.8973565;
-const OFICINA_LNG = -60.3211236;
-
 function initMapaOficina() {
   const el = document.getElementById('mapaOficina');
   if (!el || typeof L === 'undefined') return;
 
   const mapa = L.map('mapaOficina', {
-    center:          [OFICINA_LAT, OFICINA_LNG],
-    zoom:            16,
-    zoomControl:     false,
-    scrollWheelZoom: false,
-    dragging:        false,
-    doubleClickZoom: false,
+    center:             [OFICINA_LAT, OFICINA_LNG],
+    zoom:               16,
+    zoomControl:        false,
+    scrollWheelZoom:    false,
+    dragging:           false,
+    doubleClickZoom:    false,
     attributionControl: false,
   });
 
@@ -405,25 +402,23 @@ function initMapaOficina() {
             font-size="12" font-weight="700" fill="#fff">LG</text>
     </svg>`,
     iconSize:    [38, 38],
-    iconAnchor:  [19, 19],
-    popupAnchor: [0, -22],
+    iconAnchor:  [19, 38],
+    popupAnchor: [0, -42],
   });
 
   L.marker([OFICINA_LAT, OFICINA_LNG], { icon: iconOficina })
     .bindPopup('<b>Leonardograf Propiedades</b><br>Coronel Suárez 3131, Olavarría')
     .addTo(mapa);
 
-  // "Ver en mapa" — desktop: scroll a busquedas + setView; mobile: Google Maps
+  // "Ver en mapa" → scroll al mapa de propiedades + abrir popup de la oficina
   document.getElementById('btnVerEnMapa')?.addEventListener('click', () => {
     if (window.innerWidth < 768) {
       window.open('https://maps.google.com/?q=-36.8973565,-60.3211236', '_blank', 'noopener');
     } else {
       document.getElementById('busquedas')?.scrollIntoView({ behavior: 'smooth' });
       setTimeout(() => {
-        if (typeof mapaInstancia !== 'undefined' && mapaInstancia) {
-          mapaInstancia.setView([OFICINA_LAT, OFICINA_LNG], 17);
-        }
-      }, 600);
+        if (typeof abrirPopupOficina === 'function') abrirPopupOficina();
+      }, 700);
     }
   });
 }
