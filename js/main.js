@@ -375,8 +375,8 @@ function initOnboarding() {
 
 /* ── Mini mapa de la oficina ─────────────────── */
 
-const OFICINA_LAT = -36.8866;
-const OFICINA_LNG = -60.3210;
+const OFICINA_LAT = -36.8973565;
+const OFICINA_LNG = -60.3211236;
 
 function initMapaOficina() {
   const el = document.getElementById('mapaOficina');
@@ -416,7 +416,7 @@ function initMapaOficina() {
   // "Ver en mapa" — desktop: scroll a busquedas + setView; mobile: Google Maps
   document.getElementById('btnVerEnMapa')?.addEventListener('click', () => {
     if (window.innerWidth < 768) {
-      window.open(`https://maps.google.com/?q=${OFICINA_LAT},${OFICINA_LNG}`, '_blank', 'noopener');
+      window.open('https://maps.google.com/?q=-36.8973565,-60.3211236', '_blank', 'noopener');
     } else {
       document.getElementById('busquedas')?.scrollIntoView({ behavior: 'smooth' });
       setTimeout(() => {
