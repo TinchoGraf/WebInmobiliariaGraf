@@ -14,15 +14,26 @@
    Variables globales — sistema de diseño
 ─────────────────────────────────────────── */
 :root {
-  /* Colores */
+  /* Paleta principal */
+  --color-primario:         #A00000;
+  --color-primario-hover:   #B71C1C;
+  --color-gris-principal:   #757575;
+  --color-gris-oscuro:      #5E5E5E;
+  --color-gris-claro:       #9A9A9A;
+  --color-blanco:           #FFFFFF;
+  --color-fondo:            #F5F5F5;
+  --color-texto:            #1A1A1A;
+  --color-texto-secundario: #5E5E5E;
+
+  /* Aliases usados por los componentes */
   --color-bg:           #FFFFFF;
-  --color-bg-soft:      #F7F7F5;
+  --color-bg-soft:      #F5F5F5;
   --color-text:         #1A1A1A;
-  --color-text-muted:   #6B6B6B;
-  --color-accent:       #1B4332;
-  --color-accent-hover: #2D6A4F;
+  --color-text-muted:   #5E5E5E;
+  --color-accent:       #A00000;
+  --color-accent-hover: #B71C1C;
   --color-whatsapp:     #25D366;
-  --color-border:       #E8E8E6;
+  --color-border:       #9A9A9A;
 
   /* Tipografía */
   --font-family: 'Inter', sans-serif;

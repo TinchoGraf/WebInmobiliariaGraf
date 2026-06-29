@@ -6,9 +6,9 @@ const marcadoresPorId  = {};   // { [propId]: L.Marker }
 /* ── Íconos ──────────────────────────────────── */
 
 function _colorPorOperacion(operacion) {
-  return (operacion === 'alquiler')                                              ? '#2563eb'
-       : (operacion === 'alquiler_temp' || operacion === 'alquiler_temporario') ? '#7c3aed'
-       : '#1B4332';
+  return (operacion === 'alquiler')                                              ? '#A00000'
+       : (operacion === 'alquiler_temp' || operacion === 'alquiler_temporario') ? '#B71C1C'
+       : '#EAB308';
 }
 
 function _iconoNormal(operacion) {
@@ -27,9 +27,9 @@ function _iconoNormal(operacion) {
 }
 
 function _iconoResaltado(operacion) {
-  const c = (operacion === 'alquiler')                                              ? '#60a5fa'
-           : (operacion === 'alquiler_temp' || operacion === 'alquiler_temporario') ? '#c084fc'
-           : '#52b788';
+  const c = (operacion === 'alquiler')                                              ? '#C62828'
+           : (operacion === 'alquiler_temp' || operacion === 'alquiler_temporario') ? '#D32F2F'
+           : '#F9A825';
   return L.divIcon({
     className: '',
     html: `<div style="

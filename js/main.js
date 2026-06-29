@@ -132,7 +132,7 @@ function crearCard(prop) {
       <img src="${img}" alt="${prop.titulo}" width="400" height="260" loading="lazy" />
       <span class="propiedad-card__badge ${opClass}">${opLabel}</span>
       <button class="propiedad-card__fav" aria-label="Guardar en favoritos" aria-pressed="false" data-id="${prop.id}">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B4332" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A00000" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
       </button>
     </a>
     <div class="propiedad-card__body">
@@ -170,7 +170,7 @@ function crearCard(prop) {
     const btn    = e.currentTarget;
     const saved  = btn.getAttribute('aria-pressed') === 'true';
     btn.setAttribute('aria-pressed', String(!saved));
-    btn.querySelector('svg').setAttribute('fill', saved ? 'none' : '#1B4332');
+    btn.querySelector('svg').setAttribute('fill', saved ? 'none' : '#A00000');
   });
 
   return article;
