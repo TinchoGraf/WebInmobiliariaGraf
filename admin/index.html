@@ -10,8 +10,8 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
     :root {
-      --accent:    #1B4332;
-      --accent-h:  #2D6A4F;
+      --accent:    #A00000;
+      --accent-h:  #B71C1C;
       --bg:        #f4f6f8;
       --white:     #ffffff;
       --border:    #e2e8f0;
@@ -29,7 +29,7 @@
     input, textarea, select { font-family: inherit; font-size: 14px; }
 
     /* ── LOGIN ── */
-    .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%); padding: 1rem; }
+    .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #A00000 0%, #B71C1C 100%); padding: 1rem; }
     .login-card { background: var(--white); border-radius: 14px; padding: 2.5rem 2rem; width: 100%; max-width: 370px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
     .login-brand { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.5rem; }
     .login-brand__icon { width: 36px; height: 36px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; }
@@ -50,7 +50,7 @@
     .btn-secondary { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
     .btn-secondary:hover { background: var(--bg); }
     .btn-outline   { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
-    .btn-outline:hover   { background: #f0faf5; }
+    .btn-outline:hover   { background: #fef2f2; }
     .btn-full { width: 100%; justify-content: center; padding: 0.7rem; font-size: 14px; }
 
     /* ── ALERTS ── */
@@ -69,6 +69,13 @@
 
     /* ── MAIN ── */
     .admin-main { padding: 1.5rem; max-width: 1300px; margin: 0 auto; }
+
+    /* ── TABS ── */
+    .tabs-nav { display: flex; margin-bottom: 1.25rem; border-bottom: 2px solid var(--border); }
+    .tab-btn { padding: 0.65rem 1.25rem; border: none; background: none; font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color .15s, border-color .15s; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.tab-active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+    .badge-red { background: var(--danger); color: #fff; border-radius: 999px; font-size: 11px; font-weight: 700; padding: 2px 7px; line-height: 1.4; }
 
     /* ── TOOLBAR ── */
     .toolbar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
@@ -104,11 +111,16 @@
 
     .btn-action { padding: 0.3rem 0.65rem; border-radius: 5px; font-size: 12px; font-weight: 500; border: 1.5px solid; cursor: pointer; transition: background .12s; margin-left: 4px; }
     .btn-edit { border-color: var(--accent); color: var(--accent); background: transparent; }
-    .btn-edit:hover { background: #f0faf5; }
+    .btn-edit:hover { background: #fef2f2; }
     .btn-del  { border-color: var(--danger); color: var(--danger); background: transparent; }
     .btn-del:hover  { background: #fef2f2; }
 
     .admin-state { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+
+    /* ── MENSAJES ── */
+    .msg-no-leido td { font-weight: 500; }
+    .msg-leido { opacity: 0.65; }
+    .msg-txt { max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; cursor: help; }
 
     /* ── MODAL ── */
     .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.55); z-index: 500; display: flex; align-items: flex-start; justify-content: center; padding: 1.5rem 1rem; overflow-y: auto; }
@@ -138,7 +150,7 @@
 
     /* ── DROP ZONE ── */
     .drop-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 1.25rem; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; }
-    .drop-zone.dz-over { border-color: var(--accent); background: #f0faf5; }
+    .drop-zone.dz-over { border-color: var(--accent); background: #fef2f2; }
     .drop-zone__hint { font-size: 13px; color: var(--muted); margin-top: 0.4rem; }
     .drop-zone__hint button { background: none; border: none; color: var(--accent); font-weight: 600; cursor: pointer; font-size: 13px; text-decoration: underline; }
     .preview-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
@@ -150,6 +162,11 @@
     /* ── MAP PICKER ── */
     #mapPicker { height: 280px; border-radius: var(--radius); overflow: hidden; border: 1.5px solid var(--border); cursor: crosshair; }
     .map-coords { font-size: 12px; color: var(--muted); margin-top: 4px; min-height: 18px; }
+
+    /* ── MAP POLÍGONO ── */
+    #mapPoligono { height: 300px; border-radius: var(--radius); overflow: hidden; border: 1.5px solid var(--border); cursor: crosshair; }
+    .poly-toolbar { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap; }
+    .poly-status { font-size: 12px; color: var(--muted); flex: 1; min-height: 18px; }
 
     [hidden] { display: none !important; }
   </style>
@@ -187,20 +204,46 @@
       <span class="admin-header__title">Leonardograf Propiedades — Admin</span>
     </div>
     <div class="admin-header__right">
-      <a class="admin-header__site" href="../index.html" target="_blank">← Ver sitio</a>
+      <a class="admin-header__site" href="../index.html" target="_blank">&#8592; Ver sitio</a>
       <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
     </div>
   </header>
 
   <main class="admin-main">
-    <div class="toolbar">
-      <input id="searchInput" type="search" class="search-input" placeholder="Buscar por dirección, título o barrio…" autocomplete="off">
-      <button class="btn btn-primary" onclick="openCreate()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Nueva propiedad
+
+    <!-- Tabs -->
+    <nav class="tabs-nav">
+      <button class="tab-btn tab-active" onclick="switchTab('propiedades')">Propiedades</button>
+      <button class="tab-btn" onclick="switchTab('mensajes')">
+        Mensajes recibidos
+        <span id="badgeMensajes" class="badge-red" hidden></span>
       </button>
+    </nav>
+
+    <!-- Tab: Propiedades -->
+    <div id="tabPropiedades">
+      <div class="toolbar">
+        <input id="searchInput" type="search" class="search-input" placeholder="Buscar por dirección, título o barrio…" autocomplete="off">
+        <button class="btn btn-primary" onclick="openCreate()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nueva propiedad
+        </button>
+      </div>
+      <div id="tableWrap"></div>
     </div>
-    <div id="tableWrap"></div>
+
+    <!-- Tab: Mensajes -->
+    <div id="tabMensajes" hidden>
+      <div class="toolbar">
+        <label class="form-check" style="margin:0">
+          <input type="checkbox" id="chkNoLeidos" onchange="loadMensajes()">
+          <span>Solo no leídos</span>
+        </label>
+        <button class="btn btn-secondary" onclick="loadMensajes()">Actualizar</button>
+      </div>
+      <div id="mensajesWrap"></div>
+    </div>
+
   </main>
 </div>
 
@@ -209,7 +252,7 @@
   <div class="modal-box">
     <div class="modal-header">
       <h2 id="formTitle">Nueva propiedad</h2>
-      <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">✕</button>
+      <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">&#x2715;</button>
     </div>
 
     <div class="modal-body">
@@ -229,22 +272,24 @@
           </div>
           <div class="form-group">
             <label>Tipo *</label>
-            <select name="tipo" required>
+            <select name="tipo" id="selectTipo" required>
               <option value="">Seleccioná…</option>
               <option value="casa">Casa</option>
               <option value="departamento">Departamento</option>
               <option value="terreno">Terreno</option>
-              <option value="lote">Lote</option>
-              <option value="local">Local comercial</option>
+              <option value="comercial">Comercial</option>
+              <option value="chacra_campo">Chacra / Campo</option>
+              <option value="quinta">Quinta</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Estado</label>
-            <select name="estado">
+            <label>Antigüedad</label>
+            <select name="antiguedad">
               <option value="">Sin especificar</option>
               <option value="a_estrenar">A estrenar</option>
-              <option value="con_uso">Con uso</option>
-              <option value="a_reciclar">A reciclar</option>
+              <option value="1_10">1 a 10 años</option>
+              <option value="10_20">10 a 20 años</option>
+              <option value="mas_20">+20 años</option>
             </select>
           </div>
         </div>
@@ -296,6 +341,25 @@
           <div id="mapCoords" class="map-coords"></div>
         </div>
 
+        <!-- Sección polígono — solo chacra_campo / quinta -->
+        <div id="seccionPoligono" hidden>
+          <hr class="form-divider">
+          <div class="form-group">
+            <p class="form-section-title">Perímetro del campo</p>
+            <p class="form-hint">Dibujá el perímetro del campo: hacé clic en el mapa para agregar puntos. Doble clic para cerrar el polígono.</p>
+            <div id="mapPoligono"></div>
+            <div class="poly-toolbar">
+              <span id="polyStatus" class="poly-status"></span>
+              <button type="button" class="btn btn-secondary" onclick="limpiarPoligono()">Limpiar polígono</button>
+            </div>
+            <input type="hidden" id="fieldPoligonoZona" name="poligono_zona">
+          </div>
+          <div class="form-group">
+            <label>Superficie (m²)</label>
+            <input type="number" name="dimension_m2" min="0" step="0.01" placeholder="Ej: 50000">
+          </div>
+        </div>
+
         <hr class="form-divider">
 
         <div class="form-group">
@@ -329,31 +393,40 @@
   </div>
 </div>
 
-  <!-- Botón flotante WhatsApp -->
-  <a href="https://wa.me/5492284224338?text=Hola%2C%20quiero%20consultar%20por%20una%20propiedad"
-     class="wpp-float-admin" target="_blank" rel="noopener noreferrer"
-     aria-label="Contactar por WhatsApp"
-     style="position:fixed;bottom:2rem;right:2rem;width:52px;height:52px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,0.4);z-index:9999;color:#fff;text-decoration:none;transition:transform .2s,box-shadow .2s;animation:wpp-pulse-admin 2.8s ease-in-out infinite"
-     onmouseenter="this.style.transform='scale(1.1)';this.style.animation='none'"
-     onmouseleave="this.style.transform='';this.style.animation='wpp-pulse-admin 2.8s ease-in-out infinite'">
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-    <style>@keyframes wpp-pulse-admin{0%,100%{box-shadow:0 4px 20px rgba(37,211,102,0.4)}50%{box-shadow:0 4px 30px rgba(37,211,102,0.65),0 0 0 10px rgba(37,211,102,0.12)}}</style>
-  </a>
+<!-- Botón flotante WhatsApp -->
+<a href="https://wa.me/5492284224338?text=Hola%2C%20quiero%20consultar%20por%20una%20propiedad"
+   class="wpp-float-admin" target="_blank" rel="noopener noreferrer"
+   aria-label="Contactar por WhatsApp"
+   style="position:fixed;bottom:2rem;right:2rem;width:52px;height:52px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,0.4);z-index:9999;color:#fff;text-decoration:none;transition:transform .2s,box-shadow .2s;animation:wpp-pulse-admin 2.8s ease-in-out infinite"
+   onmouseenter="this.style.transform='scale(1.1)';this.style.animation='none'"
+   onmouseleave="this.style.transform='';this.style.animation='wpp-pulse-admin 2.8s ease-in-out infinite'">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+  <style>@keyframes wpp-pulse-admin{0%,100%{box-shadow:0 4px 20px rgba(37,211,102,0.4)}50%{box-shadow:0 4px 30px rgba(37,211,102,0.65),0 0 0 10px rgba(37,211,102,0.12)}}</style>
+</a>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-/* ─── Configuración ────────────────────────── */
+/* ─── Config ─────────────────────────────── */
 const API_BASE = 'http://localhost:8000';
 
-/* ─── Estado ────────────────────────────────── */
+/* ─── Estado global ──────────────────────── */
 let creds        = sessionStorage.getItem('lgraf_auth');
 let propiedades  = [];
+let mensajes     = [];
 let editId       = null;
 let nuevasImg    = [];
 let mapaPicker   = null;
 let pickerMarker = null;
 
-/* ─── Helpers ───────────────────────────────── */
+/* ─── Estado polígono ────────────────────── */
+let mapPoligono     = null;
+let polyPoints      = [];
+let polyMarkers     = [];
+let polyShape       = null;
+let polyClosed      = false;
+let pendingPolyClick = null;
+
+/* ─── Helpers ───────────────────────────── */
 function authHdr(extra = {}) {
   return { 'Authorization': `Basic ${creds}`, ...extra };
 }
@@ -374,7 +447,13 @@ function fmtPrecio(v, m) {
   }).format(v);
 }
 
-/* ─── Boot ──────────────────────────────────── */
+function fmtFecha(str) {
+  try {
+    return new Date(str).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' });
+  } catch { return str || ''; }
+}
+
+/* ─── Boot ──────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   if (creds) showDash();
   else showLogin();
@@ -411,7 +490,6 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       errEl.hidden = false;
       return;
     }
-    // 422 = credenciales OK, cuerpo inválido — es lo esperado
     sessionStorage.setItem('lgraf_auth', b64);
     creds = b64;
     showDash();
@@ -431,17 +509,28 @@ function showDash() {
   document.getElementById('loginScreen').hidden = true;
   document.getElementById('dashboard').hidden   = false;
   loadProps();
+  loadMensajesBadge();
 }
 
 function logout() {
   sessionStorage.removeItem('lgraf_auth');
   creds = null;
-  document.getElementById('loginPass').value  = '';
-  document.getElementById('loginErr').hidden  = true;
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginErr').hidden = true;
   showLogin();
 }
 
-/* ─── Cargar propiedades ─────────────────── */
+/* ─── Tabs ───────────────────────────────── */
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('tab-active', ['propiedades','mensajes'][i] === tab);
+  });
+  document.getElementById('tabPropiedades').hidden = tab !== 'propiedades';
+  document.getElementById('tabMensajes').hidden    = tab !== 'mensajes';
+  if (tab === 'mensajes') loadMensajes();
+}
+
+/* ─── Propiedades: carga ─────────────────── */
 async function loadProps() {
   const wrap = document.getElementById('tableWrap');
   wrap.innerHTML = '<p class="admin-state">Cargando propiedades…</p>';
@@ -471,10 +560,13 @@ document.getElementById('searchInput').addEventListener('input', function () {
   );
 });
 
-/* ─── Render tabla ───────────────────────── */
+/* ─── Render tabla propiedades ───────────── */
 const OP_LABELS = { venta: 'Venta', alquiler: 'Alquiler', alquiler_temp: 'Alq. temporal' };
 const OP_CSS    = { venta: 'op-venta', alquiler: 'op-alquiler', alquiler_temp: 'op-temp' };
-const TIPO_LBL  = { casa: 'Casa', departamento: 'Depto.', terreno: 'Terreno', lote: 'Lote', local: 'Local' };
+const TIPO_LBL  = {
+  casa: 'Casa', departamento: 'Depto.', terreno: 'Terreno',
+  comercial: 'Comercial', chacra_campo: 'Chacra / Campo', quinta: 'Quinta',
+};
 
 function thumbHtml(p) {
   const noImg = `<div class="thumb-empty"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>`;
@@ -557,19 +649,113 @@ async function doDel(id, titulo) {
 }
 
 /* ═══════════════════════════════════════════
-   MODAL
+   MENSAJES
+═══════════════════════════════════════════ */
+async function loadMensajesBadge() {
+  try {
+    const r = await fetch(`${API_BASE}/mensajes?no_leidos=true`, { headers: authHdr() });
+    if (!r.ok) return;
+    const data  = await r.json();
+    const badge = document.getElementById('badgeMensajes');
+    if (data.length > 0) {
+      badge.textContent = `${data.length} sin leer`;
+      badge.hidden = false;
+    } else {
+      badge.hidden = true;
+    }
+  } catch { /* silencioso */ }
+}
+
+async function loadMensajes() {
+  const wrap     = document.getElementById('mensajesWrap');
+  const noLeidos = document.getElementById('chkNoLeidos').checked;
+  wrap.innerHTML = '<p class="admin-state">Cargando mensajes…</p>';
+  try {
+    const url = noLeidos ? `${API_BASE}/mensajes?no_leidos=true` : `${API_BASE}/mensajes`;
+    const r   = await fetch(url, { headers: authHdr() });
+    if (r.status === 401) { logout(); return; }
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    mensajes = await r.json();
+    renderMensajes(mensajes);
+  } catch (err) {
+    wrap.innerHTML = `<p class="admin-state" style="color:var(--danger)">Error: ${escH(err.message)}</p>`;
+  }
+}
+
+function renderMensajes(list) {
+  const wrap = document.getElementById('mensajesWrap');
+  if (!list.length) {
+    wrap.innerHTML = '<p class="admin-state">No hay mensajes para mostrar.</p>';
+    return;
+  }
+  const rows = list.map(m => {
+    const truncado = m.mensaje.length > 80 ? m.mensaje.slice(0, 80) + '…' : m.mensaje;
+    return `
+      <tr class="${m.leido ? 'msg-leido' : 'msg-no-leido'}" id="msg-row-${m.id}">
+        <td style="white-space:nowrap">${escH(fmtFecha(m.fecha))}</td>
+        <td>${escH(m.nombre)}</td>
+        <td><a href="mailto:${escH(m.email)}" style="color:var(--accent)">${escH(m.email)}</a></td>
+        <td>${escH(m.telefono || '—')}</td>
+        <td><span class="msg-txt" title="${escH(m.mensaje)}">${escH(truncado)}</span></td>
+        <td style="text-align:center;font-size:15px">${m.leido ? '&#x2713;' : '&#x25CB;'}</td>
+        <td>${m.leido
+          ? '<span style="color:var(--muted);font-size:12px">Leído</span>'
+          : `<button class="btn-action btn-edit" onclick="marcarLeido(${m.id}, this)">Marcar leído</button>`
+        }</td>
+      </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <div class="table-wrap">
+      <table class="prop-table">
+        <thead><tr>
+          <th>Fecha</th><th>Nombre</th><th>Email</th><th>Teléfono</th>
+          <th>Mensaje</th><th>Leído</th><th>Acción</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+async function marcarLeido(id, btn) {
+  btn.disabled = true;
+  try {
+    const r = await fetch(`${API_BASE}/mensajes/${id}/leido`, {
+      method: 'PATCH', headers: authHdr(),
+    });
+    if (r.status === 401) { logout(); return; }
+    if (!r.ok) throw new Error();
+    const row = document.getElementById(`msg-row-${id}`);
+    if (row) {
+      row.className = 'msg-leido';
+      row.cells[5].innerHTML = '&#x2713;';
+      row.cells[6].innerHTML = '<span style="color:var(--muted);font-size:12px">Leído</span>';
+    }
+    const idx = mensajes.findIndex(m => m.id === id);
+    if (idx !== -1) mensajes[idx].leido = true;
+    loadMensajesBadge();
+  } catch {
+    btn.disabled = false;
+    alert('Error al marcar como leído.');
+  }
+}
+
+/* ═══════════════════════════════════════════
+   MODAL FORM
 ═══════════════════════════════════════════ */
 function openCreate() {
   editId    = null;
   nuevasImg = [];
-  document.getElementById('formTitle').textContent = 'Nueva propiedad';
+  document.getElementById('formTitle').textContent      = 'Nueva propiedad';
   document.getElementById('propForm').reset();
-  document.getElementById('previewGrid').innerHTML = '';
-  document.getElementById('fieldLat').value        = '';
-  document.getElementById('fieldLng').value        = '';
-  document.getElementById('fieldActiva').checked   = true;
-  document.getElementById('formErr').hidden        = true;
-  document.getElementById('mapCoords').textContent = '';
+  document.getElementById('previewGrid').innerHTML      = '';
+  document.getElementById('fieldLat').value             = '';
+  document.getElementById('fieldLng').value             = '';
+  document.getElementById('fieldActiva').checked        = true;
+  document.getElementById('formErr').hidden             = true;
+  document.getElementById('mapCoords').textContent      = '';
+  document.getElementById('seccionPoligono').hidden     = true;
+  limpiarPoligono();
   if (pickerMarker && mapaPicker) { mapaPicker.removeLayer(pickerMarker); pickerMarker = null; }
   openModal();
 }
@@ -584,14 +770,20 @@ function openEdit(id) {
 
   const fm = document.getElementById('propForm');
   fm.reset();
-  ['titulo','descripcion','operacion','tipo','estado','precio','moneda','direccion','barrio'].forEach(k => {
+  ['titulo','descripcion','operacion','tipo','antiguedad','precio','moneda','direccion','barrio'].forEach(k => {
     const el = fm.elements[k];
     if (el) el.value = p[k] ?? '';
   });
+  if (fm.elements.dimension_m2 && p.dimension_m2 != null) {
+    fm.elements.dimension_m2.value = p.dimension_m2;
+  }
   document.getElementById('fieldActiva').checked = !!p.activa;
   document.getElementById('fieldLat').value      = p.lat ?? '';
   document.getElementById('fieldLng').value      = p.lng ?? '';
   updateCoordsLabel(p.lat, p.lng);
+
+  const showPoly = ['chacra_campo','quinta'].includes(p.tipo);
+  document.getElementById('seccionPoligono').hidden = !showPoly;
 
   const grid = document.getElementById('previewGrid');
   grid.innerHTML = (p.imagenes || []).map(src => `
@@ -602,6 +794,13 @@ function openEdit(id) {
 
   openModal();
   if (p.lat && p.lng) setTimeout(() => setMarker(p.lat, p.lng, false), 350);
+  if (showPoly) {
+    setTimeout(() => {
+      if (!mapPoligono) initMapPoligono();
+      else mapPoligono.invalidateSize();
+      if (p.poligono_zona) restorePoligono(p.poligono_zona);
+    }, 400);
+  }
 }
 
 function openModal() {
@@ -620,10 +819,25 @@ document.getElementById('formModal').addEventListener('click', function (e) {
   if (e.target === this) closeModal();
 });
 
-/* ─── Mapa picker ────────────────────────── */
+/* ─── Tipo → mostrar/ocultar polígono ────── */
+document.getElementById('selectTipo').addEventListener('change', function () {
+  const showPoly = ['chacra_campo','quinta'].includes(this.value);
+  const sec      = document.getElementById('seccionPoligono');
+  sec.hidden     = !showPoly;
+  if (showPoly) {
+    setTimeout(() => {
+      if (!mapPoligono) initMapPoligono();
+      else mapPoligono.invalidateSize();
+    }, 80);
+  } else {
+    limpiarPoligono();
+  }
+});
+
+/* ─── Mapa picker (ubicación) ─────────────── */
 const PICKER_ICON = () => L.divIcon({
   className: '',
-  html: '<div style="width:18px;height:18px;background:#1B4332;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.35);"></div>',
+  html: '<div style="width:18px;height:18px;background:#A00000;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.35);"></div>',
   iconSize: [18,18], iconAnchor: [9,9],
 });
 
@@ -631,7 +845,7 @@ function initMapPicker() {
   if (mapaPicker) { mapaPicker.invalidateSize(); return; }
   mapaPicker = L.map('mapPicker', { center: [-36.8927, -60.3224], zoom: 13 });
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19,
   }).addTo(mapaPicker);
   mapaPicker.on('click', e => setMarker(e.latlng.lat, e.latlng.lng, true));
@@ -653,6 +867,110 @@ function updateCoordsLabel(lat, lng) {
   el.textContent = (lat && lng)
     ? `Lat: ${parseFloat(lat).toFixed(6)} · Lng: ${parseFloat(lng).toFixed(6)}`
     : '';
+}
+
+/* ─── Mapa polígono (chacras) ─────────────── */
+function initMapPoligono() {
+  if (mapPoligono) { mapPoligono.invalidateSize(); return; }
+  mapPoligono = L.map('mapPoligono', { center: [-36.8927, -60.3224], zoom: 11 });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+  }).addTo(mapPoligono);
+  mapPoligono.doubleClickZoom.disable();
+
+  mapPoligono.on('click', e => {
+    if (polyClosed) return;
+    if (pendingPolyClick) return;
+    pendingPolyClick = setTimeout(() => {
+      addPolyPoint(e.latlng.lat, e.latlng.lng);
+      pendingPolyClick = null;
+    }, 280);
+  });
+
+  mapPoligono.on('dblclick', e => {
+    if (pendingPolyClick) { clearTimeout(pendingPolyClick); pendingPolyClick = null; }
+    if (polyPoints.length >= 3) closePoligono();
+  });
+
+  setTimeout(() => mapPoligono.invalidateSize(), 250);
+}
+
+function addPolyPoint(lat, lng) {
+  polyPoints.push([lat, lng]);
+  const m = L.circleMarker([lat, lng], {
+    radius: 6, color: '#A00000', fillColor: '#A00000', fillOpacity: 1, weight: 2,
+  }).addTo(mapPoligono);
+  polyMarkers.push(m);
+  drawPolyPreview();
+  updatePoligonoField();
+  document.getElementById('polyStatus').textContent =
+    polyPoints.length < 3
+      ? `${polyPoints.length} punto(s) — necesitás 3 o más para cerrar el polígono.`
+      : `${polyPoints.length} puntos — doble clic para cerrar el polígono.`;
+}
+
+function drawPolyPreview() {
+  if (polyShape) mapPoligono.removeLayer(polyShape);
+  if (polyPoints.length < 2) return;
+  polyShape = L.polyline(polyPoints, { color: '#A00000', weight: 2, dashArray: '6,4' }).addTo(mapPoligono);
+}
+
+function closePoligono() {
+  if (polyPoints.length < 3) return;
+  polyClosed = true;
+  if (polyShape) mapPoligono.removeLayer(polyShape);
+  polyShape = L.polygon(polyPoints, {
+    color: '#A00000', fillColor: '#A00000', fillOpacity: 0.15, weight: 2,
+  }).addTo(mapPoligono);
+  updatePoligonoField();
+  document.getElementById('polyStatus').textContent =
+    `Polígono cerrado con ${polyPoints.length} puntos.`;
+}
+
+function limpiarPoligono() {
+  if (mapPoligono) {
+    polyMarkers.forEach(m => mapPoligono.removeLayer(m));
+    if (polyShape) mapPoligono.removeLayer(polyShape);
+  }
+  polyMarkers  = [];
+  polyShape    = null;
+  polyPoints   = [];
+  polyClosed   = false;
+  if (pendingPolyClick) { clearTimeout(pendingPolyClick); pendingPolyClick = null; }
+  const f = document.getElementById('fieldPoligonoZona');
+  const s = document.getElementById('polyStatus');
+  if (f) f.value = '';
+  if (s) s.textContent = '';
+}
+
+function updatePoligonoField() {
+  document.getElementById('fieldPoligonoZona').value = JSON.stringify(polyPoints);
+}
+
+function restorePoligono(jsonStr) {
+  try {
+    const pts = JSON.parse(jsonStr);
+    if (!Array.isArray(pts) || pts.length < 3) return;
+    limpiarPoligono();
+    polyPoints = pts;
+    pts.forEach(([lat, lng]) => {
+      const m = L.circleMarker([lat, lng], {
+        radius: 6, color: '#A00000', fillColor: '#A00000', fillOpacity: 1, weight: 2,
+      }).addTo(mapPoligono);
+      polyMarkers.push(m);
+    });
+    polyClosed = true;
+    polyShape  = L.polygon(pts, {
+      color: '#A00000', fillColor: '#A00000', fillOpacity: 0.15, weight: 2,
+    }).addTo(mapPoligono);
+    mapPoligono.fitBounds(polyShape.getBounds(), { padding: [20, 20] });
+    updatePoligonoField();
+    document.getElementById('polyStatus').textContent =
+      `Polígono cargado con ${pts.length} puntos.`;
+  } catch (err) {
+    console.error('Error al restaurar polígono:', err);
+  }
 }
 
 /* ─── Drag & drop imágenes ───────────────── */
@@ -678,7 +996,7 @@ function addFiles(files) {
       div.className = 'preview-item';
       div.innerHTML = `
         <img src="${ev.target.result}" alt="${escH(file.name)}">
-        <button type="button" class="preview-x" data-idx="${idx}" aria-label="Quitar">✕</button>`;
+        <button type="button" class="preview-x" data-idx="${idx}" aria-label="Quitar">&#x2715;</button>`;
       div.querySelector('.preview-x').addEventListener('click', () => {
         nuevasImg[idx] = null;
         div.remove();
@@ -689,7 +1007,7 @@ function addFiles(files) {
   });
 }
 
-/* ─── Guardar ────────────────────────────── */
+/* ─── Guardar propiedad ──────────────────── */
 async function saveForm(activa) {
   const errEl   = document.getElementById('formErr');
   const fm      = document.getElementById('propForm');
@@ -698,17 +1016,19 @@ async function saveForm(activa) {
   errEl.hidden  = true;
 
   const datos = {
-    titulo:      fm.elements.titulo.value.trim(),
-    descripcion: fm.elements.descripcion.value.trim() || null,
-    operacion:   fm.elements.operacion.value,
-    tipo:        fm.elements.tipo.value,
-    estado:      fm.elements.estado.value || null,
-    precio:      parseFloat(fm.elements.precio.value),
-    moneda:      fm.elements.moneda.value,
-    direccion:   fm.elements.direccion.value.trim(),
-    barrio:      fm.elements.barrio.value.trim() || null,
-    lat:         parseFloat(document.getElementById('fieldLat').value) || null,
-    lng:         parseFloat(document.getElementById('fieldLng').value) || null,
+    titulo:        fm.elements.titulo.value.trim(),
+    descripcion:   fm.elements.descripcion.value.trim() || null,
+    operacion:     fm.elements.operacion.value,
+    tipo:          fm.elements.tipo.value,
+    antiguedad:    fm.elements.antiguedad.value || null,
+    precio:        parseFloat(fm.elements.precio.value),
+    moneda:        fm.elements.moneda.value,
+    direccion:     fm.elements.direccion.value.trim(),
+    barrio:        fm.elements.barrio.value.trim() || null,
+    lat:           parseFloat(document.getElementById('fieldLat').value) || null,
+    lng:           parseFloat(document.getElementById('fieldLng').value) || null,
+    poligono_zona: document.getElementById('fieldPoligonoZona').value || null,
+    dimension_m2:  parseFloat(fm.elements.dimension_m2.value) || null,
     activa,
   };
 
