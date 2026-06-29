@@ -16,14 +16,17 @@ from pydantic import BaseModel, ConfigDict, field_validator
 from sqlalchemy.orm import Session
 
 from database import get_db, init_db
-from models import Propiedad
+from models import Mensaje, Propiedad
 
 load_dotenv()
 
-ADMIN_USER     = os.getenv("ADMIN_USER", "admin")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "cambiarme123")
-IMAGES_DIR     = Path(__file__).parent.parent / "assets" / "images"
+ADMIN_USER      = os.getenv("ADMIN_USER", "admin")
+ADMIN_PASSWORD  = os.getenv("ADMIN_PASSWORD", "cambiarme123")
+IMAGES_DIR      = Path(__file__).parent.parent / "assets" / "images"
 IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+BACKUP_DIR      = Path(__file__).parent / "backup"
+BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+MENSAJES_BACKUP = BACKUP_DIR / "mensajes_backup.jsonl"
 
 
 @asynccontextmanager
@@ -63,17 +66,19 @@ def require_auth(credentials: HTTPBasicCredentials = Depends(security)) -> str:
 # ── Schemas ──────────────────────────────────────────────────────────────────
 
 class PropiedadIn(BaseModel):
-    titulo:      str
-    descripcion: Optional[str] = None
-    operacion:   str
-    tipo:        str
-    estado:      Optional[str] = None
-    precio:      float
-    moneda:      str = "USD"
-    direccion:   str
-    barrio:      Optional[str] = None
-    lat:         Optional[float] = None
-    lng:         Optional[float] = None
+    titulo:        str
+    descripcion:   Optional[str]   = None
+    operacion:     str
+    tipo:          str
+    antiguedad:    Optional[str]   = None
+    precio:        float
+    moneda:        str             = "USD"
+    direccion:     str
+    barrio:        Optional[str]   = None
+    lat:           Optional[float] = None
+    lng:           Optional[float] = None
+    poligono_zona: Optional[str]   = None
+    dimension_m2:  Optional[float] = None
 
 
 class PropiedadOut(BaseModel):
@@ -84,16 +89,18 @@ class PropiedadOut(BaseModel):
     descripcion:    Optional[str]
     operacion:      str
     tipo:           str
-    estado:         Optional[str]
+    antiguedad:     Optional[str]
     precio:         float
     moneda:         str
     direccion:      str
     barrio:         Optional[str]
-    lat:            float
-    lng:            float
+    lat:            Optional[float]
+    lng:            Optional[float]
     imagenes:       list[str]
     activa:         bool
     fecha_creacion: str
+    poligono_zona:  Optional[str]
+    dimension_m2:   Optional[float]
 
     @field_validator("imagenes", mode="before")
     @classmethod
@@ -110,6 +117,32 @@ class PropiedadOut(BaseModel):
         return str(v) if v else ""
 
 
+class MensajeIn(BaseModel):
+    nombre:   str
+    email:    str
+    telefono: Optional[str] = None
+    mensaje:  str
+
+
+class MensajeOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id:       int
+    nombre:   str
+    email:    str
+    telefono: Optional[str]
+    mensaje:  str
+    leido:    bool
+    fecha:    str
+
+    @field_validator("fecha", mode="before")
+    @classmethod
+    def serialize_fecha(cls, v):
+        if hasattr(v, "isoformat"):
+            return v.isoformat()
+        return str(v) if v else ""
+
+
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 def get_prop_or_404(prop_id: int, db: Session) -> Propiedad:
@@ -119,7 +152,14 @@ def get_prop_or_404(prop_id: int, db: Session) -> Propiedad:
     return prop
 
 
-# ── Endpoints ────────────────────────────────────────────────────────────────
+def get_mensaje_or_404(mensaje_id: int, db: Session) -> Mensaje:
+    msg = db.query(Mensaje).filter(Mensaje.id == mensaje_id).first()
+    if not msg:
+        raise HTTPException(status_code=404, detail="Mensaje no encontrado")
+    return msg
+
+
+# ── Endpoints: Propiedades ────────────────────────────────────────────────────
 
 @app.get("/health")
 def health():
@@ -130,7 +170,7 @@ def health():
 def listar_propiedades(
     operacion:  Optional[str]   = Query(None),
     tipo:       Optional[str]   = Query(None),
-    estado:     Optional[str]   = Query(None),
+    antiguedad: Optional[str]   = Query(None),
     precio_min: Optional[float] = Query(None),
     precio_max: Optional[float] = Query(None),
     moneda:     Optional[str]   = Query(None),
@@ -142,7 +182,7 @@ def listar_propiedades(
         q = q.filter(Propiedad.activa == True)  # noqa: E712
     if operacion:              q = q.filter(Propiedad.operacion == operacion)
     if tipo:                   q = q.filter(Propiedad.tipo == tipo)
-    if estado:                 q = q.filter(Propiedad.estado == estado)
+    if antiguedad:             q = q.filter(Propiedad.antiguedad == antiguedad)
     if moneda:                 q = q.filter(Propiedad.moneda == moneda)
     if precio_min is not None: q = q.filter(Propiedad.precio >= precio_min)
     if precio_max is not None: q = q.filter(Propiedad.precio <= precio_max)
@@ -228,3 +268,51 @@ def subir_imagenes(
     db.commit()
     db.refresh(prop)
     return prop
+
+
+# ── Endpoints: Mensajes ───────────────────────────────────────────────────────
+
+@app.post("/mensajes", response_model=MensajeOut, status_code=201)
+def crear_mensaje(datos: MensajeIn, db: Session = Depends(get_db)):
+    msg = Mensaje(**datos.model_dump())
+    db.add(msg)
+    db.commit()
+    db.refresh(msg)
+
+    record = {
+        "id":       msg.id,
+        "nombre":   msg.nombre,
+        "email":    msg.email,
+        "telefono": msg.telefono,
+        "mensaje":  msg.mensaje,
+        "fecha":    msg.fecha.isoformat() if hasattr(msg.fecha, "isoformat") else str(msg.fecha),
+    }
+    with MENSAJES_BACKUP.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+    return msg
+
+
+@app.get("/mensajes", response_model=list[MensajeOut])
+def listar_mensajes(
+    no_leidos: bool = Query(False),
+    db: Session = Depends(get_db),
+    _: str = Depends(require_auth),
+):
+    q = db.query(Mensaje)
+    if no_leidos:
+        q = q.filter(Mensaje.leido == False)  # noqa: E712
+    return q.order_by(Mensaje.fecha.desc()).all()
+
+
+@app.patch("/mensajes/{mensaje_id}/leido", response_model=MensajeOut)
+def marcar_leido(
+    mensaje_id: int,
+    db: Session = Depends(get_db),
+    _: str = Depends(require_auth),
+):
+    msg = get_mensaje_or_404(mensaje_id, db)
+    msg.leido = True
+    db.commit()
+    db.refresh(msg)
+    return msg
