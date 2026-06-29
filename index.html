@@ -310,17 +310,19 @@
                 <option value="casa">Casa</option>
                 <option value="departamento">Departamento</option>
                 <option value="terreno">Terreno</option>
-                <option value="lote">Lote</option>
-                <option value="local">Local comercial</option>
+                <option value="comercial">Comercial</option>
+                <option value="chacra_campo">Chacra / Campo</option>
+                <option value="quinta">Quinta</option>
               </select>
 
-              <select class="filtro-select" id="filtroEstado"
-                      aria-label="Estado de la propiedad">
-                <option value="">Estado</option>
-                <option value="a_estrenar">A estrenar</option>
-                <option value="con_uso">Con uso</option>
-                <option value="a_reciclar">A reciclar</option>
-              </select>
+              <div class="filtro-antiguedad" id="filtroAntiguedad"
+                   role="group" aria-label="Antigüedad de la propiedad">
+                <button class="chip active" data-val="" type="button">Todos</button>
+                <button class="chip" data-val="a_estrenar" type="button">A estrenar</button>
+                <button class="chip" data-val="1_10" type="button">1-10 a.</button>
+                <button class="chip" data-val="10_20" type="button">10-20 a.</button>
+                <button class="chip" data-val="mas_20" type="button">+20 a.</button>
+              </div>
 
               <div class="filtro-precio-group">
                 <input class="filtro-input" type="number"

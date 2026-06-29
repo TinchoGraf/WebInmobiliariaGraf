@@ -180,9 +180,11 @@ def listar_propiedades(
     q = db.query(Propiedad)
     if not todas:
         q = q.filter(Propiedad.activa == True)  # noqa: E712
-    if operacion:              q = q.filter(Propiedad.operacion == operacion)
-    if tipo:                   q = q.filter(Propiedad.tipo == tipo)
-    if antiguedad:             q = q.filter(Propiedad.antiguedad == antiguedad)
+    if operacion:  q = q.filter(Propiedad.operacion == operacion)
+    if tipo:       q = q.filter(Propiedad.tipo == tipo)
+    if antiguedad:
+        vals = [v.strip() for v in antiguedad.split(',') if v.strip()]
+        q = q.filter(Propiedad.antiguedad.in_(vals))
     if moneda:                 q = q.filter(Propiedad.moneda == moneda)
     if precio_min is not None: q = q.filter(Propiedad.precio >= precio_min)
     if precio_max is not None: q = q.filter(Propiedad.precio <= precio_max)

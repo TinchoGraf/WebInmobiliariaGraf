@@ -73,6 +73,20 @@ function _crearPopupHtml(prop) {
     </div>`;
 }
 
+/* ── Leyenda ─────────────────────────────────── */
+
+function _agregarLeyenda() {
+  const ctrl = L.control({ position: 'bottomleft' });
+  ctrl.onAdd = function () {
+    const div = L.DomUtil.create('div', 'mapa-leyenda');
+    div.innerHTML =
+      '<div class="mapa-leyenda__item"><span class="mapa-leyenda__dot" style="background:#A00000"></span>Alquiler</div>' +
+      '<div class="mapa-leyenda__item"><span class="mapa-leyenda__dot" style="background:#EAB308"></span>Venta</div>';
+    return div;
+  };
+  ctrl.addTo(mapaInstancia);
+}
+
 /* ── API pública ─────────────────────────────── */
 
 function initMapa(propiedades = []) {
@@ -91,6 +105,7 @@ function initMapa(propiedades = []) {
   }).addTo(mapaInstancia);
 
   agregarMarcadores(propiedades);
+  _agregarLeyenda();
 }
 
 function agregarMarcadores(propiedades) {

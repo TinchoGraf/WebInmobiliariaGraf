@@ -18,3 +18,88 @@
 .popup-custom .leaflet-popup-tip {
   background: #fff;
 }
+
+/* Aislar los z-index internos de Leaflet para que no pasen sobre
+   filtros (z-index:100) ni navbar (z-index:1000) */
+.busquedas__mapa-wrap {
+  position: relative;
+  z-index: 0;
+}
+
+/* ── Leyenda del mapa ─────────────────────────── */
+.mapa-leyenda {
+  background: #fff;
+  border: 0.5px solid #9A9A9A;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: Inter, sans-serif;
+  color: #1A1A1A;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  line-height: 1.4;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.mapa-leyenda__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.mapa-leyenda__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Moneda bloqueada por operación ───────────── */
+.filtro-moneda:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  user-select: none;
+}
+
+/* ── Chips de antigüedad (multi-select) ─────────── */
+.filtro-antiguedad {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.chip {
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-full, 999px);
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 500;
+  font-family: var(--font-family, Inter, sans-serif);
+  border: 1.5px solid var(--color-border, #9A9A9A);
+  background-color: var(--color-bg, #fff);
+  color: var(--color-text-muted, #5E5E5E);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.chip:hover {
+  border-color: var(--color-accent, #A00000);
+  color: var(--color-accent, #A00000);
+}
+
+.chip.active {
+  background-color: var(--color-accent, #A00000);
+  border-color: var(--color-accent, #A00000);
+  color: #fff;
+}
+
+/* ── Estados de antigüedad en cards ──────────── */
+.card-estado--a_estrenar { background: rgba(16, 185, 129, .12); color: #059669; }
+.card-estado--1_10       { background: rgba(99, 102, 241, .12); color: #4f46e5; }
+.card-estado--10_20      { background: rgba(107, 114, 128, .10); color: #4b5563; }
+.card-estado--mas_20     { background: rgba(245, 158, 11, .12);  color: #d97706; }

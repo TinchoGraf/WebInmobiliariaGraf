@@ -14,12 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ── Estado de filtros ────────────────────────── */
 
 const filtrosActivos = {
-  operacion: 'todos',
-  tipo:      '',
-  estado:    '',
-  moneda:    'USD',
-  precioMin: '',
-  precioMax: '',
+  operacion:  'todos',
+  tipo:       '',
+  antiguedad: '',
+  moneda:     'USD',
+  precioMin:  '',
+  precioMax:  '',
 };
 
 /* ── Carga / filtrado ─────────────────────────── */
@@ -77,10 +77,10 @@ function _actualizarContador(total) {
 
 const TIPO_LABELS = {
   casa: 'Casa', departamento: 'Departamento', terreno: 'Terreno',
-  lote: 'Lote', local: 'Local comercial', ph: 'PH',
+  comercial: 'Comercial', chacra_campo: 'Chacra / Campo', quinta: 'Quinta', ph: 'PH',
 };
-const ESTADO_LABELS = {
-  a_estrenar: 'A estrenar', con_uso: 'Con uso', a_reciclar: 'A reciclar',
+const ANTIGUEDAD_LABELS = {
+  a_estrenar: 'A estrenar', '1_10': '1-10 años', '10_20': '10-20 años', mas_20: '+20 años',
 };
 const OP_LABELS = {
   venta: 'VENTA', alquiler: 'ALQUILER',
@@ -97,8 +97,9 @@ function crearCard(prop) {
   const wppLink   = generarLinkWhatsApp(prop);
   const opLabel   = OP_LABELS[prop.operacion]  || prop.operacion.toUpperCase();
   const opClass   = OP_CLASSES[prop.operacion] || '';
-  const tipoLabel = TIPO_LABELS[prop.tipo]     || prop.tipo;
-  const estadoLabel = prop.estado ? (ESTADO_LABELS[prop.estado] || prop.estado) : null;
+  const tipoLabel       = TIPO_LABELS[prop.tipo]            || prop.tipo;
+  const antiguedadLabel = prop.antiguedad
+    ? (ANTIGUEDAD_LABELS[prop.antiguedad] || prop.antiguedad) : null;
 
   // Features: solo las que tienen valor
   const featureItems = [
@@ -140,7 +141,7 @@ function crearCard(prop) {
       <h3 class="propiedad-card__titulo">${prop.titulo}</h3>
       <div class="propiedad-card__meta">
         <span class="card-tipo">${tipoLabel}</span>
-        ${estadoLabel ? `<span class="card-estado card-estado--${prop.estado}">${estadoLabel}</span>` : ''}
+        ${antiguedadLabel ? `<span class="card-estado card-estado--${prop.antiguedad}">${antiguedadLabel}</span>` : ''}
       </div>
       <div class="propiedad-card__ubicacion">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
@@ -201,14 +202,37 @@ function initFiltros() {
       btn.classList.add('active');
       btn.setAttribute('aria-selected', 'true');
       filtrosActivos.operacion = btn.dataset.op;
+      _actualizarMonedaPorOperacion(btn.dataset.op);
       aplicarFiltros();
     });
   });
 
   // Dropdowns y precio → sólo se aplican con "Buscar"
-  document.getElementById('filtroTipo')?.addEventListener('change', e  => { filtrosActivos.tipo  = e.target.value; });
-  document.getElementById('filtroEstado')?.addEventListener('change', e => { filtrosActivos.estado = e.target.value; });
+  document.getElementById('filtroTipo')?.addEventListener('change', e => { filtrosActivos.tipo = e.target.value; });
   document.getElementById('filtroMoneda')?.addEventListener('change', e => { filtrosActivos.moneda = e.target.value; });
+
+  // Chips de antigüedad (multi-select)
+  document.querySelectorAll('#filtroAntiguedad .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const val = chip.dataset.val;
+      if (val === '') {
+        document.querySelectorAll('#filtroAntiguedad .chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        filtrosActivos.antiguedad = '';
+      } else {
+        document.querySelector('#filtroAntiguedad .chip[data-val=""]')?.classList.remove('active');
+        chip.classList.toggle('active');
+        const activos = [...document.querySelectorAll('#filtroAntiguedad .chip.active')]
+          .map(c => c.dataset.val).filter(v => v !== '');
+        if (activos.length === 0) {
+          document.querySelector('#filtroAntiguedad .chip[data-val=""]')?.classList.add('active');
+          filtrosActivos.antiguedad = '';
+        } else {
+          filtrosActivos.antiguedad = activos.join(',');
+        }
+      }
+    });
+  });
 
   const debouncedBuscar = debounce(aplicarFiltros, 500);
   document.getElementById('filtroMin')?.addEventListener('input', e => {
@@ -225,12 +249,12 @@ function initFiltros() {
 
   // Limpiar filtros
   document.getElementById('btnLimpiar')?.addEventListener('click', () => {
-    filtrosActivos.operacion = 'todos';
-    filtrosActivos.tipo      = '';
-    filtrosActivos.estado    = '';
-    filtrosActivos.moneda    = 'USD';
-    filtrosActivos.precioMin = '';
-    filtrosActivos.precioMax = '';
+    filtrosActivos.operacion  = 'todos';
+    filtrosActivos.tipo       = '';
+    filtrosActivos.antiguedad = '';
+    filtrosActivos.moneda     = 'USD';
+    filtrosActivos.precioMin  = '';
+    filtrosActivos.precioMax  = '';
 
     document.querySelectorAll('.filtro-tab').forEach(b => {
       const isAll = b.dataset.op === 'todos';
@@ -238,13 +262,19 @@ function initFiltros() {
       b.setAttribute('aria-selected', String(isAll));
     });
 
-    const s = v => { if (v) v.value = ''; };
-    s(document.getElementById('filtroTipo'));
-    s(document.getElementById('filtroEstado'));
-    s(document.getElementById('filtroMin'));
-    s(document.getElementById('filtroMax'));
+    const clr = v => { if (v) v.value = ''; };
+    clr(document.getElementById('filtroTipo'));
+    clr(document.getElementById('filtroMin'));
+    clr(document.getElementById('filtroMax'));
+
+    // Reset chips antigüedad → "Todos"
+    document.querySelectorAll('#filtroAntiguedad .chip').forEach(c => c.classList.remove('active'));
+    document.querySelector('#filtroAntiguedad .chip[data-val=""]')?.classList.add('active');
+
+    // Reset moneda y desbloquear
     const mon = document.getElementById('filtroMoneda');
-    if (mon) mon.value = 'USD';
+    if (mon) { mon.value = 'USD'; mon.disabled = false; mon.title = ''; }
+    _actualizarMonedaPorOperacion('todos');
 
     aplicarFiltros();
   });
@@ -258,6 +288,27 @@ function initFiltros() {
       toggle.classList.toggle('open', open);
       toggle.setAttribute('aria-expanded', String(open));
     });
+  }
+}
+
+/* ── Moneda automática por operación ─────────── */
+
+function _actualizarMonedaPorOperacion(op) {
+  const sel = document.getElementById('filtroMoneda');
+  if (!sel) return;
+  if (op === 'venta') {
+    sel.value    = 'USD';
+    sel.disabled = true;
+    sel.title    = 'Las ventas se publican en USD';
+    filtrosActivos.moneda = 'USD';
+  } else if (op === 'alquiler' || op === 'alquiler_temporario') {
+    sel.value    = 'ARS';
+    sel.disabled = true;
+    sel.title    = 'Los alquileres se publican en ARS';
+    filtrosActivos.moneda = 'ARS';
+  } else {
+    sel.disabled = false;
+    sel.title    = '';
   }
 }
 

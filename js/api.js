@@ -24,8 +24,8 @@ async function fetchPropiedades(filtros = {}) {
   const params = {};
 
   if (filtros.operacion && filtros.operacion !== 'todos') params.operacion = filtros.operacion;
-  if (filtros.tipo)   params.tipo   = filtros.tipo;
-  if (filtros.estado) params.estado = filtros.estado;
+  if (filtros.tipo)       params.tipo       = filtros.tipo;
+  if (filtros.antiguedad) params.antiguedad = filtros.antiguedad;
 
   // Moneda y precio: solo cuando se filtra por rango de precio
   const hasPrecio = filtros.precioMin || filtros.precioMax;
