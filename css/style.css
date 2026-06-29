@@ -26,14 +26,15 @@
   --color-texto-secundario: #5E5E5E;
 
   /* Aliases usados por los componentes */
-  --color-bg:           #FFFFFF;
-  --color-bg-soft:      #F5F5F5;
-  --color-text:         #1A1A1A;
-  --color-text-muted:   #5E5E5E;
+  --color-bg:           #1A1A1A;
+  --color-bg-soft:      #222222;
+  --color-bg-elevated:  #2C2C2C;
+  --color-text:         rgba(255, 255, 255, 0.92);
+  --color-text-muted:   rgba(255, 255, 255, 0.60);
   --color-accent:       #A00000;
   --color-accent-hover: #B71C1C;
   --color-whatsapp:     #25D366;
-  --color-border:       #9A9A9A;
+  --color-border:       rgba(255, 255, 255, 0.12);
 
   /* Tipografía */
   --font-family: 'Inter', sans-serif;
@@ -62,9 +63,9 @@
   --radius-full: 9999px;
 
   /* Sombras */
-  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.08);
-  --shadow-md:   0 4px 20px rgba(0, 0, 0, 0.12);
-  --shadow-lg:   0 8px 40px rgba(0, 0, 0, 0.16);
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.45);
+  --shadow-md:   0 4px 20px rgba(0, 0, 0, 0.55);
+  --shadow-lg:   0 8px 40px rgba(0, 0, 0, 0.65);
 
   /* Transiciones */
   --transition: 0.2s ease;

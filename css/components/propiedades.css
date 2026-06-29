@@ -8,7 +8,7 @@
 
 /* ── Panel de filtros ─────────────────────────── */
 .filtros-panel {
-  background-color: var(--color-bg);
+  background-color: var(--color-bg-elevated);
   border-bottom: 1px solid var(--color-border);
   position: sticky;
   top: var(--navbar-h);
@@ -75,7 +75,7 @@
   font-size: var(--font-size-sm);
   font-weight: 500;
   border: 1.5px solid var(--color-border);
-  background-color: var(--color-bg);
+  background-color: var(--color-bg-elevated);
   color: var(--color-text-muted);
   cursor: pointer;
   transition: all var(--transition);
@@ -109,8 +109,8 @@
   font-size: var(--font-size-sm);
   font-family: var(--font-family);
   color: var(--color-text);
-  background-color: var(--color-bg);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B6B6B' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-color: var(--color-bg-elevated);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239A9A9A' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
   appearance: none;
@@ -161,7 +161,7 @@
   font-size: var(--font-size-sm);
   font-family: var(--font-family);
   color: var(--color-text);
-  background: var(--color-bg);
+  background: var(--color-bg-elevated);
   outline: none;
   transition: border-color var(--transition), box-shadow var(--transition);
 }
@@ -274,7 +274,7 @@
 
 /* ── Card propiedad ───────────────────────────── */
 .propiedad-card {
-  background-color: var(--color-bg);
+  background-color: var(--color-bg-elevated);
   border-radius: var(--radius-lg);
   border: 0.5px solid var(--color-border);
   box-shadow: var(--shadow-card);
@@ -457,7 +457,7 @@
 }
 
 .btn-card-detail:hover {
-  background-color: rgba(160, 0, 0, 0.06);
+  background-color: rgba(160, 0, 0, 0.18);
 }
 
 .btn-card-wpp {
@@ -466,7 +466,7 @@
 }
 
 .btn-card-wpp:hover {
-  background-color: rgba(37, 211, 102, 0.08);
+  background-color: rgba(37, 211, 102, 0.18);
 }
 
 /* ── Popup del mapa ───────────────────────────── */

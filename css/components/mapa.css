@@ -28,13 +28,13 @@
 
 /* ── Leyenda del mapa ─────────────────────────── */
 .mapa-leyenda {
-  background: #fff;
-  border: 0.5px solid #9A9A9A;
+  background: #2C2C2C;
+  border: 0.5px solid rgba(255, 255, 255, 0.15);
   border-radius: 6px;
   padding: 6px 10px;
   font-size: 12px;
   font-family: Inter, sans-serif;
-  color: #1A1A1A;
+  color: rgba(255, 255, 255, 0.85);
   pointer-events: none;
   display: flex;
   flex-direction: column;
@@ -78,9 +78,9 @@
   font-size: var(--font-size-sm, 0.875rem);
   font-weight: 500;
   font-family: var(--font-family, Inter, sans-serif);
-  border: 1.5px solid var(--color-border, #9A9A9A);
-  background-color: var(--color-bg, #fff);
-  color: var(--color-text-muted, #5E5E5E);
+  border: 1.5px solid var(--color-border, rgba(255,255,255,0.12));
+  background-color: var(--color-bg-elevated, #2C2C2C);
+  color: var(--color-text-muted, rgba(255,255,255,0.60));
   cursor: pointer;
   transition: all 0.18s ease;
   white-space: nowrap;
@@ -99,7 +99,7 @@
 }
 
 /* ── Estados de antigüedad en cards ──────────── */
-.card-estado--a_estrenar { background: rgba(16, 185, 129, .12); color: #059669; }
-.card-estado--1_10       { background: rgba(99, 102, 241, .12); color: #4f46e5; }
-.card-estado--10_20      { background: rgba(107, 114, 128, .10); color: #4b5563; }
-.card-estado--mas_20     { background: rgba(245, 158, 11, .12);  color: #d97706; }
+.card-estado--a_estrenar { background: rgba(16, 185, 129, .18); color: #34d399; }
+.card-estado--1_10       { background: rgba(99, 102, 241, .18); color: #a5b4fc; }
+.card-estado--10_20      { background: rgba(156, 163, 175, .15); color: #d1d5db; }
+.card-estado--mas_20     { background: rgba(245, 158, 11, .18);  color: #fbbf24; }
