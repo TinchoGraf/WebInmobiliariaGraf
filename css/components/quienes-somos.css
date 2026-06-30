@@ -47,7 +47,7 @@
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--color-accent);
-  background-color: rgba(160, 0, 0, 0.08);
+  background-color: rgba(231, 66, 58, 0.08);
   padding: 0.3rem 0.85rem;
   border-radius: var(--radius-full);
   text-transform: uppercase;

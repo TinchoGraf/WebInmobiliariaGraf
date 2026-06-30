@@ -121,7 +121,7 @@
 
 .filtro-select:focus {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(160, 0, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(231, 66, 58, 0.12);
 }
 
 /* Grupo precio (min — max|moneda) */
@@ -149,7 +149,7 @@
 
 .filtro-precio-max-wrap:focus-within {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(160, 0, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(231, 66, 58, 0.12);
 }
 
 .filtro-input {
@@ -168,7 +168,7 @@
 
 .filtro-input:focus {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(160, 0, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(231, 66, 58, 0.12);
 }
 
 /* Input max dentro del wrapper con moneda */
@@ -195,7 +195,7 @@
   font-family: var(--font-family);
   color: var(--color-accent);
   background-color: var(--color-bg-soft);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23A00000' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23E7423A' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 6px center;
   appearance: none;
@@ -325,8 +325,8 @@
   letter-spacing: 0.06em;
 }
 
-.badge--alquiler { background-color: #A00000; color: #fff; }
-.badge--temp     { background-color: #B71C1C; color: #fff; }
+.badge--alquiler { background-color: #E7423A; color: #fff; }
+.badge--temp     { background-color: #CF3830; color: #fff; }
 
 /* Botón favorito */
 .propiedad-card__fav {
@@ -347,7 +347,7 @@
 }
 
 .propiedad-card__fav:hover { transform: scale(1.12); }
-.propiedad-card__fav[aria-pressed="true"] svg { fill: #A00000 !important; }
+.propiedad-card__fav[aria-pressed="true"] svg { fill: #E7423A !important; }
 
 /* Cuerpo */
 .propiedad-card__body {
@@ -358,7 +358,7 @@
 .propiedad-card__precio {
   font-size: var(--font-size-xl);
   font-weight: 700;
-  color: var(--color-accent);
+  color: var(--color-precio);
   margin-bottom: 3px;
 }
 
@@ -457,7 +457,7 @@
 }
 
 .btn-card-detail:hover {
-  background-color: rgba(160, 0, 0, 0.18);
+  background-color: rgba(231, 66, 58, 0.18);
 }
 
 .btn-card-wpp {
@@ -497,7 +497,7 @@
 .map-popup__precio {
   font-size: var(--font-size-md);
   font-weight: 700;
-  color: var(--color-accent);
+  color: var(--color-precio);
   margin-bottom: 2px;
 }
 

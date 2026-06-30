@@ -14,9 +14,9 @@
    Variables globales — sistema de diseño
 ─────────────────────────────────────────── */
 :root {
-  /* Paleta principal */
-  --color-primario:         #A00000;
-  --color-primario-hover:   #B71C1C;
+  /* Paleta principal — colores oficiales de la marca */
+  --color-primario:         #E7423A;
+  --color-primario-hover:   #CF3830;
   --color-gris-principal:   #757575;
   --color-gris-oscuro:      #5E5E5E;
   --color-gris-claro:       #9A9A9A;
@@ -26,13 +26,16 @@
   --color-texto-secundario: #5E5E5E;
 
   /* Aliases usados por los componentes */
-  --color-bg:           #1A1A1A;
-  --color-bg-soft:      #222222;
-  --color-bg-elevated:  #2C2C2C;
-  --color-text:         rgba(255, 255, 255, 0.92);
-  --color-text-muted:   rgba(255, 255, 255, 0.60);
-  --color-accent:       #A00000;
-  --color-accent-hover: #B71C1C;
+  --color-bg:           #0E1114;   /* header/footer — negro azulado */
+  --color-bg-soft:      #1C2126;   /* fondo principal */
+  --color-bg-elevated:  #252B32;   /* filas alternas / cards */
+  --color-text:         #FFFFFF;
+  --color-text-muted:   #9FB0BB;   /* gris azulado — labels, kicker */
+  --color-texto-desc:   #CFD8DD;   /* gris claro — descripciones */
+  --color-precio:       #5FD07A;   /* verde — precios y montos */
+  --color-logo-bg:      #273035;   /* fondo del isologo */
+  --color-accent:       #E7423A;   /* rojo de marca */
+  --color-accent-hover: #CF3830;
   --color-whatsapp:     #25D366;
   --color-border:       rgba(255, 255, 255, 0.12);
 
