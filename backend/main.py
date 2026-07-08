@@ -20,8 +20,14 @@ from models import Mensaje, Propiedad
 
 load_dotenv()
 
-ADMIN_USER      = os.getenv("ADMIN_USER", "admin")
-ADMIN_PASSWORD  = os.getenv("ADMIN_PASSWORD", "cambiarme123")
+ADMIN_USER = os.getenv("ADMIN_USER")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+
+if not ADMIN_USER or not ADMIN_PASSWORD:
+    raise RuntimeError(
+        "❌ ADMIN_USER y ADMIN_PASSWORD deben estar definidos en el archivo .env. "
+        "Copiar .env.example como .env y completar los valores."
+    )
 IMAGES_DIR      = Path(__file__).parent.parent / "assets" / "images"
 IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 BACKUP_DIR      = Path(__file__).parent / "backup"
