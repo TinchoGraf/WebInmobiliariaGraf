@@ -59,7 +59,7 @@
     /* ── HEADER ── */
     .admin-header { background: #1a202c; color: #fff; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; position: sticky; top: 0; z-index: 200; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
     .admin-header__left { display: flex; align-items: center; gap: 0.75rem; }
-    .admin-header__logo { width: 32px; height: 32px; background: rgba(255,255,255,0.2); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+    .admin-header__logo { width: 32px; height: 32px; border-radius: 6px; object-fit: cover; }
     .admin-header__title { font-size: 14px; font-weight: 600; opacity: 0.95; }
     .admin-header__right { display: flex; align-items: center; gap: 1rem; }
     .admin-header__site { font-size: 13px; opacity: 0.75; }
@@ -200,7 +200,7 @@
 <div id="dashboard" hidden>
   <header class="admin-header">
     <div class="admin-header__left">
-      <div class="admin-header__logo">LG</div>
+      <img src="../assets/images/logo-icon.png" alt="" class="admin-header__logo" />
       <span class="admin-header__title">Leonardograf Propiedades — Admin</span>
     </div>
     <div class="admin-header__right">
@@ -307,7 +307,7 @@
         <div class="form-row" style="grid-template-columns: 2fr 1fr">
           <div class="form-group">
             <label>Dirección *</label>
-            <input type="text" name="direccion" required placeholder="Ej: Rivadavia 1250, Olavarría">
+            <input type="text" name="direccion" id="fieldDireccion" required placeholder="Ej: Rivadavia 1250, Olavarría">
           </div>
           <div class="form-group">
             <label>Barrio</label>
@@ -336,9 +336,13 @@
 
         <div class="form-group">
           <p class="form-section-title">Ubicación en el mapa</p>
-          <p class="form-hint">Hacé clic en el mapa para marcar la ubicación de la propiedad</p>
+          <p class="form-hint">
+            Se sugiere sola a partir de la dirección — hacé clic en el mapa para ajustarla si hace falta.
+            <button type="button" class="btn btn-secondary" id="btnGeocode" onclick="geocodeDireccion(true)" style="margin-left:8px">Sugerir de nuevo</button>
+          </p>
           <div id="mapPicker"></div>
           <div id="mapCoords" class="map-coords"></div>
+          <div id="geocodeStatus" class="form-hint" style="margin-top:4px"></div>
         </div>
 
         <!-- Sección polígono — solo chacra_campo / quinta -->
@@ -417,6 +421,7 @@ let editId       = null;
 let nuevasImg    = [];
 let mapaPicker   = null;
 let pickerMarker = null;
+let lastGeocodedDireccion = '';
 
 /* ─── Estado polígono ────────────────────── */
 let mapPoligono     = null;
@@ -746,6 +751,7 @@ async function marcarLeido(id, btn) {
 function openCreate() {
   editId    = null;
   nuevasImg = [];
+  lastGeocodedDireccion = '';
   document.getElementById('formTitle').textContent      = 'Nueva propiedad';
   document.getElementById('propForm').reset();
   document.getElementById('previewGrid').innerHTML      = '';
@@ -754,6 +760,7 @@ function openCreate() {
   document.getElementById('fieldActiva').checked        = true;
   document.getElementById('formErr').hidden             = true;
   document.getElementById('mapCoords').textContent      = '';
+  document.getElementById('geocodeStatus').textContent  = '';
   document.getElementById('seccionPoligono').hidden     = true;
   limpiarPoligono();
   if (pickerMarker && mapaPicker) { mapaPicker.removeLayer(pickerMarker); pickerMarker = null; }
@@ -781,6 +788,8 @@ function openEdit(id) {
   document.getElementById('fieldLat').value      = p.lat ?? '';
   document.getElementById('fieldLng').value      = p.lng ?? '';
   updateCoordsLabel(p.lat, p.lng);
+  document.getElementById('geocodeStatus').textContent = '';
+  lastGeocodedDireccion = p.direccion ?? '';
 
   const showPoly = ['chacra_campo','quinta'].includes(p.tipo);
   document.getElementById('seccionPoligono').hidden = !showPoly;
@@ -868,6 +877,33 @@ function updateCoordsLabel(lat, lng) {
     ? `Lat: ${parseFloat(lat).toFixed(6)} · Lng: ${parseFloat(lng).toFixed(6)}`
     : '';
 }
+
+/* ─── Geocodificación de dirección (sugerir ubicación) ─── */
+async function geocodeDireccion(forzado) {
+  const direccion = document.getElementById('fieldDireccion').value.trim();
+  const statusEl  = document.getElementById('geocodeStatus');
+  if (!direccion) return;
+  if (!forzado && direccion === lastGeocodedDireccion) return;
+
+  if (!mapaPicker) initMapPicker();
+  statusEl.textContent = 'Buscando ubicación…';
+  try {
+    const query = encodeURIComponent(`${direccion}, Olavarría, Buenos Aires, Argentina`);
+    const res   = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${query}`);
+    const data  = await res.json();
+    lastGeocodedDireccion = direccion;
+    if (data && data.length) {
+      setMarker(parseFloat(data[0].lat), parseFloat(data[0].lon), true);
+      statusEl.textContent = 'Ubicación sugerida — hacé clic en el mapa si querés ajustarla';
+    } else {
+      statusEl.textContent = 'No encontramos esa dirección en el mapa — marcá la ubicación manualmente';
+    }
+  } catch (err) {
+    statusEl.textContent = 'No se pudo buscar la dirección — marcá la ubicación manualmente';
+  }
+}
+
+document.getElementById('fieldDireccion').addEventListener('blur', () => geocodeDireccion(false));
 
 /* ─── Mapa polígono (chacras) ─────────────── */
 function initMapPoligono() {

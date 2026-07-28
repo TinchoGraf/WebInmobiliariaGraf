@@ -93,8 +93,10 @@
 /* Badge flotante sobre la imagen */
 .qs__img-badge {
   position: absolute;
-  bottom: -1rem;
-  left: -1rem;
+  bottom: 1rem;
+  left: 1rem;
+  max-width: calc(100% - 2rem);
+  width: max-content;
   background: var(--color-accent);
   color: #fff;
   padding: var(--spacing-md) var(--spacing-lg);
@@ -103,6 +105,8 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   line-height: 1.4;
+  overflow-wrap: break-word;
+  box-sizing: border-box;
 }
 
 .qs__img-badge strong {
@@ -134,6 +138,11 @@
   color: var(--color-accent);
   letter-spacing: -0.03em;
   line-height: 1;
+}
+
+.qs__stat-value--text {
+  font-size: clamp(1.25rem, 2.2vw, 1.5rem);
+  letter-spacing: -0.01em;
 }
 
 .qs__stat-prefix,
@@ -172,9 +181,9 @@
 
 .qs__team-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: var(--spacing-xl);
-  max-width: 760px;
+  max-width: 360px;
   margin-inline: auto;
 }
 
@@ -240,7 +249,7 @@
   gap: 6px;
   font-size: var(--font-size-xs);
   font-weight: 600;
-  color: #0077b5;
+  color: #25d366;
   text-decoration: none;
   transition: opacity var(--transition);
 }

@@ -43,8 +43,13 @@
   opacity: 0.8;
 }
 
-.navbar__logo svg {
+.navbar__logo svg,
+.navbar__logo-img {
   flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
 }
 
 .navbar__logo-text span {
