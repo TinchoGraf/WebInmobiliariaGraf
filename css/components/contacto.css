@@ -187,6 +187,12 @@ a.contacto__card:hover {
   margin-bottom: var(--spacing-xl);
 }
 
+.contacto__wa-grid--single {
+  grid-template-columns: 1fr;
+  max-width: 360px;
+  margin-inline: auto;
+}
+
 .contacto__wa-card {
   background: var(--color-bg-elevated);
   border-radius: var(--radius-lg);
