@@ -10,7 +10,7 @@ SEED_DATA = [
         operacion="venta", tipo="casa", antiguedad="1_10",
         precio=95000, moneda="USD",
         direccion="Rivadavia 1250, Olavarria", barrio="Centro",
-        lat=-36.8927, lng=-60.3224, imagenes="[]",
+        lat=-36.8927, lng=-60.3224, imagenes=json.dumps(["assets/images/prop_1_28109d28.jpg"]),
     ),
     dict(
         titulo="Departamento a estrenar en San Martin",
@@ -18,7 +18,7 @@ SEED_DATA = [
         operacion="alquiler", tipo="departamento", antiguedad="a_estrenar",
         precio=320000, moneda="ARS",
         direccion="San Martin 455, Olavarria", barrio="Centro",
-        lat=-36.8952, lng=-60.3190, imagenes="[]",
+        lat=-36.8952, lng=-60.3190, imagenes=json.dumps(["assets/images/prop_2_1b756a34.jpg"]),
     ),
     dict(
         titulo="Casa esquina en Barrio Union",
@@ -26,7 +26,7 @@ SEED_DATA = [
         operacion="venta", tipo="casa", antiguedad="mas_20",
         precio=42000, moneda="USD",
         direccion="Av. del Trabajo 840, Olavarria", barrio="Barrio Union",
-        lat=-36.9020, lng=-60.3310, imagenes="[]",
+        lat=-36.9020, lng=-60.3310, imagenes=json.dumps(["assets/images/prop_3_eec66217.jpg"]),
     ),
     dict(
         titulo="Terreno residencial zona norte",
@@ -34,7 +34,7 @@ SEED_DATA = [
         operacion="venta", tipo="terreno", antiguedad=None,
         precio=18000, moneda="USD",
         direccion="Calle 12 y Av. Colon, Olavarria", barrio="Zona Norte",
-        lat=-36.8780, lng=-60.3150, imagenes="[]",
+        lat=-36.8780, lng=-60.3150, imagenes=json.dumps(["assets/images/prop_4_5be02755.jpg"]),
         dimension_m2=600.0,
     ),
     dict(
@@ -43,7 +43,7 @@ SEED_DATA = [
         operacion="alquiler", tipo="comercial", antiguedad="1_10",
         precio=280000, moneda="ARS",
         direccion="Rivadavia 550, Olavarria", barrio="Centro",
-        lat=-36.8940, lng=-60.3200, imagenes="[]",
+        lat=-36.8940, lng=-60.3200, imagenes=json.dumps(["assets/images/prop_5_e6758538.jpg"]),
     ),
     dict(
         titulo="Casa moderna a estrenar en Villa Fortabat",
@@ -51,7 +51,7 @@ SEED_DATA = [
         operacion="venta", tipo="casa", antiguedad="a_estrenar",
         precio=130000, moneda="USD",
         direccion="Los Aromos 320, Olavarria", barrio="Villa Fortabat",
-        lat=-36.8850, lng=-60.3070, imagenes="[]",
+        lat=-36.8850, lng=-60.3070, imagenes=json.dumps(["assets/images/prop_6_e0821434.jpg"]),
     ),
     dict(
         titulo="Departamento equipado para estadias cortas",
@@ -59,7 +59,7 @@ SEED_DATA = [
         operacion="alquiler_temp", tipo="departamento", antiguedad="a_estrenar",
         precio=15000, moneda="ARS",
         direccion="Espana 320, Olavarria", barrio="Centro",
-        lat=-36.8910, lng=-60.3240, imagenes="[]",
+        lat=-36.8910, lng=-60.3240, imagenes=json.dumps(["assets/images/prop_7_10a9d1e6.jpg"]),
     ),
     dict(
         titulo="Terreno en barrio privado Parque",
@@ -67,7 +67,7 @@ SEED_DATA = [
         operacion="venta", tipo="terreno", antiguedad=None,
         precio=22000, moneda="USD",
         direccion="Sarmiento 1800, Olavarria", barrio="Barrio Parque",
-        lat=-36.8890, lng=-60.3340, imagenes="[]",
+        lat=-36.8890, lng=-60.3340, imagenes=json.dumps(["assets/images/prop_8_02896b0e.jpg"]),
         dimension_m2=400.0,
     ),
     dict(
@@ -76,7 +76,7 @@ SEED_DATA = [
         operacion="alquiler", tipo="comercial", antiguedad="1_10",
         precio=450000, moneda="ARS",
         direccion="Av. Colon 1340, Olavarria", barrio="Palermo Chico",
-        lat=-36.8870, lng=-60.3180, imagenes="[]",
+        lat=-36.8870, lng=-60.3180, imagenes=json.dumps(["assets/images/prop_9_71201051.jpg"]),
     ),
     dict(
         titulo="Casa con pileta en Palermo Chico",
@@ -84,7 +84,7 @@ SEED_DATA = [
         operacion="venta", tipo="casa", antiguedad="1_10",
         precio=115000, moneda="USD",
         direccion="Los Jazmines 456, Olavarria", barrio="Palermo Chico",
-        lat=-36.8862, lng=-60.3060, imagenes="[]",
+        lat=-36.8862, lng=-60.3060, imagenes=json.dumps(["assets/images/prop_10_42c09165.jpg"]),
     ),
     dict(
         titulo="Chacra productiva en las afueras de Olavarria",
@@ -92,7 +92,7 @@ SEED_DATA = [
         operacion="venta", tipo="chacra_campo", antiguedad="mas_20",
         precio=280000, moneda="USD",
         direccion="Ruta 51 km 12, Olavarria", barrio=None,
-        lat=-36.9500, lng=-60.4200, imagenes="[]",
+        lat=-36.9500, lng=-60.4200, imagenes=json.dumps(["assets/images/seed_campo1.jpg"]),
         dimension_m2=500000.0,
         poligono_zona=json.dumps([
             [-36.9400, -60.4300],
@@ -108,7 +108,7 @@ SEED_DATA = [
         operacion="venta", tipo="chacra_campo", antiguedad=None,
         precio=420000, moneda="USD",
         direccion="Camino vecinal s/n, partido de Olavarria", barrio=None,
-        lat=-37.0100, lng=-60.3800, imagenes="[]",
+        lat=-37.0100, lng=-60.3800, imagenes=json.dumps(["assets/images/seed_campo2.jpg"]),
         dimension_m2=800000.0,
         poligono_zona=json.dumps([
             [-37.0000, -60.3900],
