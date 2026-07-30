@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initContactForm();
   initOnboarding();
   initMapaOficina();
+  initSuenosCumplidos();
   aplicarFiltros();
 });
 
@@ -407,7 +408,7 @@ function initMapaOficina() {
   });
 
   L.marker([OFICINA_LAT, OFICINA_LNG], { icon: iconOficina })
-    .bindPopup('<b>Leonardograf Propiedades</b><br>Coronel Suárez 3131, Olavarría')
+    .bindPopup('<b>Leonardo Graf Propiedades</b><br>Coronel Suárez 3131, Olavarría')
     .addTo(mapa);
 
   // "Ver en mapa" → scroll al mapa de propiedades + abrir popup de la oficina
@@ -421,6 +422,48 @@ function initMapaOficina() {
       }, 700);
     }
   });
+}
+
+/* ── Sueños Cumplidos ─────────────────────────── */
+
+async function initSuenosCumplidos() {
+  const grid = document.getElementById('suenosGrid');
+  if (!grid) return;
+
+  try {
+    const items = await apiFetch('/propiedades?seccion=suenos_cumplidos');
+    if (!items || !items.length) {
+      grid.innerHTML = `<p class="sc__empty">Muy pronto compartiremos nuestras operaciones exitosas.</p>`;
+      return;
+    }
+    grid.innerHTML = items.map(crearCardSuenoCumplido).join('');
+  } catch {
+    grid.innerHTML = `<p class="sc__empty">Muy pronto compartiremos nuestras operaciones exitosas.</p>`;
+  }
+}
+
+function crearCardSuenoCumplido(p) {
+  const img       = (p.imagenes && p.imagenes[0]) || imagenPlaceholder(400, 300);
+  const tipoLabel = TIPO_LABELS[p.tipo] || p.tipo;
+  const esVendida = p.estado_operacion === 'vendida';
+  const badgeTxt  = esVendida ? '✓ VENDIDA' : '✓ ALQUILADA';
+  const badgeCls  = esVendida ? 'sc-card__badge--vendida' : 'sc-card__badge--alquilada';
+  const monto     = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 }).format(p.precio_venta_final);
+  const moneda    = p.moneda_venta_final || 'USD';
+  const precioTxt = `${esVendida ? 'Vendida' : 'Alquilada'} en ${moneda} ${monto}${esVendida ? '' : '/mes'}`;
+
+  return `
+    <article class="sc-card" role="listitem">
+      <div class="sc-card__img-wrap">
+        <img src="${img}" alt="${p.titulo}" loading="lazy" />
+        <span class="sc-card__badge ${badgeCls}">${badgeTxt}</span>
+      </div>
+      <div class="sc-card__body">
+        <div class="sc-card__tipo">${tipoLabel}</div>
+        <div class="sc-card__dir">${p.direccion || p.titulo}</div>
+        <div class="sc-card__precio">${precioTxt}</div>
+      </div>
+    </article>`;
 }
 
 /* Skeleton pulse */

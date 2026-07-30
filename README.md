@@ -1,6 +1,6 @@
-# Leonardograf Propiedades — Sitio web inmobiliario
+# Leonardo Graf Propiedades — Sitio web inmobiliario
 
-Sitio web completo para **Leonardograf Propiedades**, Olavarría, Buenos Aires.  
+Sitio web completo para **Leonardo Graf Propiedades**, Olavarría, Buenos Aires.  
 Frontend estático (HTML / CSS / JS vanilla) + backend REST API (FastAPI + SQLite).
 
 ---

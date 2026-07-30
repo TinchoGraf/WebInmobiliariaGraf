@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — Leonardograf Propiedades</title>
+  <title>Admin — Leonardo Graf Propiedades</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
@@ -109,6 +109,18 @@
     .toggle input:checked + .toggle__track { background: var(--accent); }
     .toggle input:checked + .toggle__track::before { transform: translateX(18px); }
 
+    /* destacada (estrella) */
+    .btn-star { background: none; border: none; font-size: 20px; line-height: 1; cursor: pointer; color: #cbd5e0; padding: 2px 6px; transition: transform .12s; }
+    .btn-star:hover { transform: scale(1.2); }
+    .btn-star--active { color: #EAB308; }
+
+    /* estado de operación (select) */
+    .estado-op-select { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; border: 1.5px solid transparent; cursor: pointer; }
+    .estado-op-activa    { background: #d1fae5; color: #065f46; }
+    .estado-op-pausada   { background: #e5e7eb; color: #374151; }
+    .estado-op-alquilada { background: #dbeafe; color: #1e40af; }
+    .estado-op-vendida   { background: #fee2e2; color: #991b1b; }
+
     .btn-action { padding: 0.3rem 0.65rem; border-radius: 5px; font-size: 12px; font-weight: 500; border: 1.5px solid; cursor: pointer; transition: background .12s; margin-left: 4px; }
     .btn-edit { border-color: var(--accent); color: var(--accent); background: transparent; }
     .btn-edit:hover { background: #fef2f2; }
@@ -116,6 +128,21 @@
     .btn-del:hover  { background: #fef2f2; }
 
     .admin-state { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+
+    /* ── BUSCAR PARA CLIENTE ── */
+    .bc-filtros { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.25rem; margin-bottom: 1.25rem; }
+    .chip-admin { padding: 0.35rem 0.85rem; border-radius: 999px; border: 1.5px solid var(--border); background: var(--white); font-size: 12.5px; font-weight: 500; cursor: pointer; margin-right: 6px; margin-bottom: 6px; }
+    .chip-admin.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .bc-resultados-toolbar { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .bc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 1rem; }
+    .bc-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column; position: relative; }
+    .bc-card__check { position: absolute; top: 8px; left: 8px; width: 20px; height: 20px; z-index: 2; accent-color: var(--accent); cursor: pointer; }
+    .bc-card__img { width: 100%; height: 130px; object-fit: cover; background: #f1f5f9; }
+    .bc-card__img-empty { display: flex; align-items: center; justify-content: center; font-size: 12px; color: #94a3b8; }
+    .bc-card__body { padding: 0.7rem 0.85rem; display: flex; flex-direction: column; gap: 3px; }
+    .bc-card__dir { font-size: 13px; font-weight: 600; }
+    .bc-card__meta { font-size: 11.5px; color: var(--muted); }
+    .bc-card__precio { font-size: 13.5px; font-weight: 700; color: var(--accent); margin-top: 2px; }
 
     /* ── MENSAJES ── */
     .msg-no-leido td { font-weight: 500; }
@@ -178,7 +205,7 @@
   <div class="login-card">
     <div class="login-brand">
       <div class="login-brand__icon">LG</div>
-      <span class="login-brand__name">Leonardograf Propiedades</span>
+      <span class="login-brand__name">Leonardo Graf Propiedades</span>
     </div>
     <h1 class="login-title">Panel de administración</h1>
     <div id="loginErr" class="error-msg" hidden></div>
@@ -201,7 +228,7 @@
   <header class="admin-header">
     <div class="admin-header__left">
       <img src="../assets/images/logo-icon.png" alt="" class="admin-header__logo" />
-      <span class="admin-header__title">Leonardograf Propiedades — Admin</span>
+      <span class="admin-header__title">Leonardo Graf Propiedades — Admin</span>
     </div>
     <div class="admin-header__right">
       <a class="admin-header__site" href="../index.html" target="_blank">&#8592; Ver sitio</a>
@@ -214,6 +241,7 @@
     <!-- Tabs -->
     <nav class="tabs-nav">
       <button class="tab-btn tab-active" onclick="switchTab('propiedades')">Propiedades</button>
+      <button class="tab-btn" onclick="switchTab('buscarCliente')">Buscar para cliente</button>
       <button class="tab-btn" onclick="switchTab('mensajes')">
         Mensajes recibidos
         <span id="badgeMensajes" class="badge-red" hidden></span>
@@ -230,6 +258,105 @@
         </button>
       </div>
       <div id="tableWrap"></div>
+    </div>
+
+    <!-- Tab: Buscar para cliente -->
+    <div id="tabBuscarCliente" hidden>
+
+      <div class="bc-filtros">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Operación</label>
+            <select id="bcOperacion">
+              <option value="">Todos</option>
+              <option value="venta">Venta</option>
+              <option value="alquiler">Alquiler</option>
+              <option value="alquiler_temp">Alquiler temporario</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Tipo de inmueble</label>
+            <select id="bcTipo">
+              <option value="">Todos</option>
+              <option value="casa">Casa</option>
+              <option value="departamento">Departamento</option>
+              <option value="terreno">Terreno</option>
+              <option value="comercial">Comercial</option>
+              <option value="chacra_campo">Chacra / Campo</option>
+              <option value="quinta">Quinta</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Barrio</label>
+            <input type="text" id="bcBarrio" placeholder="Ej: Centro">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Antigüedad</label>
+          <div id="bcAntiguedad">
+            <button type="button" class="chip-admin active" data-val="">Todos</button>
+            <button type="button" class="chip-admin" data-val="a_estrenar">A estrenar</button>
+            <button type="button" class="chip-admin" data-val="1_10">1-10 a.</button>
+            <button type="button" class="chip-admin" data-val="10_20">10-20 a.</button>
+            <button type="button" class="chip-admin" data-val="mas_20">+20 a.</button>
+          </div>
+        </div>
+
+        <div class="form-row" style="grid-template-columns: repeat(3,1fr)">
+          <div class="form-group">
+            <label>Precio mín.</label>
+            <input type="number" id="bcPrecioMin" min="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>Precio máx.</label>
+            <input type="number" id="bcPrecioMax" min="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>Moneda</label>
+            <select id="bcMoneda">
+              <option value="USD">USD</option>
+              <option value="ARS">ARS</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row" style="grid-template-columns: repeat(4,1fr)">
+          <div class="form-group">
+            <label>Ambientes mín.</label>
+            <input type="number" id="bcAmbMin" min="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>Ambientes máx.</label>
+            <input type="number" id="bcAmbMax" min="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>Superficie total mín. (m²)</label>
+            <input type="number" id="bcSupMin" min="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>Superficie total máx. (m²)</label>
+            <input type="number" id="bcSupMax" min="0" placeholder="0">
+          </div>
+        </div>
+
+        <div class="toolbar" style="margin:0">
+          <button class="btn btn-primary" onclick="buscarParaCliente()">Buscar</button>
+          <button class="btn btn-secondary" onclick="limpiarFiltrosCliente()">Limpiar filtros</button>
+        </div>
+      </div>
+
+      <div class="bc-resultados-toolbar" id="bcResultadosToolbar" hidden>
+        <span id="bcCount" style="font-size:13px;color:var(--muted)"></span>
+        <button class="btn btn-secondary" onclick="seleccionarTodasCliente(true)">Seleccionar todas</button>
+        <button class="btn btn-secondary" onclick="seleccionarTodasCliente(false)">Deseleccionar todas</button>
+        <button class="btn btn-primary" onclick="generarPDFCliente(this)" style="margin-left:auto">📄 Generar PDF para cliente</button>
+      </div>
+
+      <div id="bcResultados" class="bc-grid">
+        <p class="admin-state">Definí los filtros y presioná «Buscar».</p>
+      </div>
+
     </div>
 
     <!-- Tab: Mensajes -->
@@ -335,6 +462,63 @@
         <hr class="form-divider">
 
         <div class="form-group">
+          <p class="form-section-title">Superficies</p>
+          <div class="form-row" style="grid-template-columns: repeat(3,1fr)">
+            <div class="form-group">
+              <label>Cubierta (m²)</label>
+              <input type="number" name="superficie_cubierta" id="fieldSupCubierta" min="0" step="0.01" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label>Descubierta (m²)</label>
+              <input type="number" name="superficie_descubierta" id="fieldSupDescubierta" min="0" step="0.01" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label>Total (m²)</label>
+              <input type="number" name="superficie_total" id="fieldSupTotal" min="0" step="0.01" placeholder="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Estado de la propiedad</label>
+            <select name="estado_propiedad">
+              <option value="">Sin especificar</option>
+              <option value="nueva">Nueva</option>
+              <option value="usado_buen_estado">Usado - Buen estado</option>
+              <option value="usado_a_refaccionar">Usado - A refaccionar</option>
+              <option value="a_reciclar">A reciclar</option>
+              <option value="a_demoler">A demoler</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Estado de la operación</label>
+            <select name="estado_operacion" id="selectEstadoOperacion">
+              <option value="activa">Activa</option>
+              <option value="pausada">Pausada</option>
+              <option value="alquilada">Alquilada</option>
+              <option value="vendida">Vendida</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row" id="seccionPrecioFinal" style="grid-template-columns: 2fr 1fr" hidden>
+          <div class="form-group">
+            <label>Precio final *</label>
+            <input type="number" name="precio_venta_final" id="fieldPrecioFinal" min="0" step="1" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>Moneda</label>
+            <select name="moneda_venta_final" id="fieldMonedaFinal">
+              <option value="USD">USD</option>
+              <option value="ARS">ARS</option>
+            </select>
+          </div>
+        </div>
+
+        <hr class="form-divider">
+
+        <div class="form-group">
           <p class="form-section-title">Ubicación en el mapa</p>
           <p class="form-hint">
             Se sugiere sola a partir de la dirección — hacé clic en el mapa para ajustarla si hace falta.
@@ -409,6 +593,8 @@
 </a>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
 /* ─── Config ─────────────────────────────── */
 const API_BASE = 'http://localhost:8000';
@@ -528,10 +714,11 @@ function logout() {
 /* ─── Tabs ───────────────────────────────── */
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    b.classList.toggle('tab-active', ['propiedades','mensajes'][i] === tab);
+    b.classList.toggle('tab-active', ['propiedades','buscarCliente','mensajes'][i] === tab);
   });
-  document.getElementById('tabPropiedades').hidden = tab !== 'propiedades';
-  document.getElementById('tabMensajes').hidden    = tab !== 'mensajes';
+  document.getElementById('tabPropiedades').hidden   = tab !== 'propiedades';
+  document.getElementById('tabBuscarCliente').hidden = tab !== 'buscarCliente';
+  document.getElementById('tabMensajes').hidden      = tab !== 'mensajes';
   if (tab === 'mensajes') loadMensajes();
 }
 
@@ -572,6 +759,9 @@ const TIPO_LBL  = {
   casa: 'Casa', departamento: 'Depto.', terreno: 'Terreno',
   comercial: 'Comercial', chacra_campo: 'Chacra / Campo', quinta: 'Quinta',
 };
+const ANTIGUEDAD_LBL = {
+  a_estrenar: 'A estrenar', '1_10': '1 a 10 años', '10_20': '10 a 20 años', mas_20: '+20 años',
+};
 
 function thumbHtml(p) {
   const noImg = `<div class="thumb-empty"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>`;
@@ -586,7 +776,7 @@ function renderTable(list) {
     return;
   }
   const rows = list.map(p => `
-    <tr class="${p.activa ? '' : 'row-paused'}">
+    <tr class="${p.estado_operacion === 'pausada' ? 'row-paused' : ''}">
       <td>${thumbHtml(p)}</td>
       <td>
         <div class="td-titulo">${escH(p.titulo)}</div>
@@ -595,11 +785,19 @@ function renderTable(list) {
       </td>
       <td><span class="op-badge ${OP_CSS[p.operacion] || ''}">${OP_LABELS[p.operacion] || escH(p.operacion)}</span></td>
       <td class="td-precio">${fmtPrecio(p.precio, p.moneda)}</td>
+      <td style="text-align:center">
+        <button class="btn-star ${p.destacada ? 'btn-star--active' : ''}"
+                onclick="doToggleDestacada(${p.id}, this)"
+                aria-label="${p.destacada ? 'Quitar de destacadas' : 'Marcar como destacada'}"
+                title="${p.destacada ? 'Quitar de destacadas' : 'Marcar como destacada'}">${p.destacada ? '★' : '☆'}</button>
+      </td>
       <td>
-        <label class="toggle" title="${p.activa ? 'Pausar' : 'Publicar'}">
-          <input type="checkbox" ${p.activa ? 'checked' : ''} onchange="doToggle(${p.id}, this)">
-          <span class="toggle__track"></span>
-        </label>
+        <select class="estado-op-select estado-op-${escH(p.estado_operacion)}" onchange="doChangeEstadoOperacion(${p.id}, this)">
+          <option value="activa"    ${p.estado_operacion === 'activa'    ? 'selected' : ''}>Activa</option>
+          <option value="pausada"   ${p.estado_operacion === 'pausada'   ? 'selected' : ''}>Pausada</option>
+          <option value="alquilada" ${p.estado_operacion === 'alquilada' ? 'selected' : ''}>Alquilada</option>
+          <option value="vendida"   ${p.estado_operacion === 'vendida'   ? 'selected' : ''}>Vendida</option>
+        </select>
       </td>
       <td style="text-align:right">
         <button class="btn-action btn-edit" onclick="openEdit(${p.id})">Editar</button>
@@ -612,27 +810,61 @@ function renderTable(list) {
       <table class="prop-table">
         <thead><tr>
           <th>Foto</th><th>Propiedad</th><th>Operación</th>
-          <th>Precio</th><th>Publicada</th><th style="text-align:right">Acciones</th>
+          <th>Precio</th><th>★</th><th>Estado</th><th style="text-align:right">Acciones</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>`;
 }
 
-/* ─── Toggle activa ──────────────────────── */
-async function doToggle(id, chk) {
+/* ─── Destacada (estrella) ───────────────── */
+async function doToggleDestacada(id, btn) {
+  btn.disabled = true;
   try {
-    const r = await fetch(`${API_BASE}/propiedades/${id}/toggle`, {
+    const r = await fetch(`${API_BASE}/propiedades/${id}/destacada`, {
       method: 'PATCH', headers: authHdr(),
     });
     if (r.status === 401) { logout(); return; }
     if (!r.ok) throw new Error();
-    const up  = await r.json();
-    const idx = propiedades.findIndex(p => p.id === id);
-    if (idx !== -1) propiedades[idx].activa = up.activa;
-    chk.closest('tr').classList.toggle('row-paused', !up.activa);
+    await loadProps(); // recarga para reordenar destacadas primero
   } catch {
-    chk.checked = !chk.checked;
+    btn.disabled = false;
+    alert('Error al cambiar destacada. Intentá de nuevo.');
+  }
+}
+
+/* ─── Estado de operación ─────────────────── */
+async function doChangeEstadoOperacion(id, sel) {
+  const nuevoEstado = sel.value;
+  const anterior     = propiedades.find(p => p.id === id)?.estado_operacion;
+  const payload      = { estado_operacion: nuevoEstado };
+
+  if (['alquilada', 'vendida'].includes(nuevoEstado)) {
+    const input = prompt('Precio final (ej: "85000 USD" o "150000 ARS"):', '');
+    if (input === null) { sel.value = anterior; return; }
+    const match = input.trim().match(/^([\d.,]+)\s*(USD|ARS)?$/i);
+    if (!match) {
+      alert('Formato inválido. Ejemplo: 85000 USD');
+      sel.value = anterior;
+      return;
+    }
+    payload.precio_venta_final = parseFloat(match[1].replace(/,/g, ''));
+    payload.moneda_venta_final = (match[2] || 'USD').toUpperCase();
+  }
+
+  sel.disabled = true;
+  try {
+    const r = await fetch(`${API_BASE}/propiedades/${id}/estado_operacion`, {
+      method: 'PATCH',
+      headers: authHdr({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(payload),
+    });
+    if (r.status === 401) { logout(); return; }
+    if (!r.ok) throw new Error();
+    await loadProps();
+  } catch {
+    sel.value = anterior;
+    sel.disabled = false;
     alert('Error al cambiar el estado. Intentá de nuevo.');
   }
 }
@@ -762,6 +994,8 @@ function openCreate() {
   document.getElementById('mapCoords').textContent      = '';
   document.getElementById('geocodeStatus').textContent  = '';
   document.getElementById('seccionPoligono').hidden     = true;
+  document.getElementById('selectEstadoOperacion').value = 'activa';
+  document.getElementById('seccionPrecioFinal').hidden   = true;
   limpiarPoligono();
   if (pickerMarker && mapaPicker) { mapaPicker.removeLayer(pickerMarker); pickerMarker = null; }
   openModal();
@@ -777,13 +1011,19 @@ function openEdit(id) {
 
   const fm = document.getElementById('propForm');
   fm.reset();
-  ['titulo','descripcion','operacion','tipo','antiguedad','precio','moneda','direccion','barrio'].forEach(k => {
+  ['titulo','descripcion','operacion','tipo','antiguedad','precio','moneda','direccion','barrio','estado_propiedad','estado_operacion'].forEach(k => {
     const el = fm.elements[k];
     if (el) el.value = p[k] ?? '';
   });
   if (fm.elements.dimension_m2 && p.dimension_m2 != null) {
     fm.elements.dimension_m2.value = p.dimension_m2;
   }
+  if (fm.elements.superficie_cubierta && p.superficie_cubierta != null) fm.elements.superficie_cubierta.value = p.superficie_cubierta;
+  if (fm.elements.superficie_descubierta && p.superficie_descubierta != null) fm.elements.superficie_descubierta.value = p.superficie_descubierta;
+  if (fm.elements.superficie_total && p.superficie_total != null) fm.elements.superficie_total.value = p.superficie_total;
+  if (fm.elements.precio_venta_final && p.precio_venta_final != null) fm.elements.precio_venta_final.value = p.precio_venta_final;
+  if (fm.elements.moneda_venta_final && p.moneda_venta_final) fm.elements.moneda_venta_final.value = p.moneda_venta_final;
+  document.getElementById('seccionPrecioFinal').hidden = !['alquilada','vendida'].includes(p.estado_operacion);
   document.getElementById('fieldActiva').checked = !!p.activa;
   document.getElementById('fieldLat').value      = p.lat ?? '';
   document.getElementById('fieldLng').value      = p.lng ?? '';
@@ -842,6 +1082,20 @@ document.getElementById('selectTipo').addEventListener('change', function () {
     limpiarPoligono();
   }
 });
+
+/* ─── Estado de la operación → mostrar/ocultar precio final ── */
+document.getElementById('selectEstadoOperacion').addEventListener('change', function () {
+  document.getElementById('seccionPrecioFinal').hidden = !['alquilada','vendida'].includes(this.value);
+});
+
+/* ─── Superficies: autocálculo del total ─────────── */
+function recalcularSuperficieTotal() {
+  const cub  = parseFloat(document.getElementById('fieldSupCubierta').value)    || 0;
+  const desc = parseFloat(document.getElementById('fieldSupDescubierta').value) || 0;
+  document.getElementById('fieldSupTotal').value = (cub || desc) ? (cub + desc) : '';
+}
+document.getElementById('fieldSupCubierta').addEventListener('input', recalcularSuperficieTotal);
+document.getElementById('fieldSupDescubierta').addEventListener('input', recalcularSuperficieTotal);
 
 /* ─── Mapa picker (ubicación) ─────────────── */
 const PICKER_ICON = () => L.divIcon({
@@ -1066,10 +1320,25 @@ async function saveForm(activa) {
     poligono_zona: document.getElementById('fieldPoligonoZona').value || null,
     dimension_m2:  parseFloat(fm.elements.dimension_m2.value) || null,
     activa,
+
+    superficie_cubierta:    parseFloat(fm.elements.superficie_cubierta.value)    || null,
+    superficie_descubierta: parseFloat(fm.elements.superficie_descubierta.value) || null,
+    superficie_total:       parseFloat(fm.elements.superficie_total.value)       || null,
+    estado_propiedad:       fm.elements.estado_propiedad.value || null,
+    estado_operacion:       fm.elements.estado_operacion.value || 'activa',
+    precio_venta_final:     parseFloat(fm.elements.precio_venta_final.value) || null,
+    moneda_venta_final:     fm.elements.moneda_venta_final.value || null,
   };
 
   if (!datos.titulo || !datos.operacion || !datos.tipo || !datos.precio || !datos.direccion) {
     errEl.textContent = 'Completá los campos obligatorios: título, operación, tipo, precio y dirección.';
+    errEl.hidden = false;
+    errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
+
+  if (['alquilada','vendida'].includes(datos.estado_operacion) && !datos.precio_venta_final) {
+    errEl.textContent = 'Completá el precio final para marcar la propiedad como alquilada o vendida.';
     errEl.hidden = false;
     errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     return;
@@ -1113,6 +1382,278 @@ async function saveForm(activa) {
   } finally {
     saveBtn.disabled    = false;
     saveBtn.textContent = activa ? 'Publicar' : 'Guardar borrador';
+  }
+}
+
+/* ═══════════════════════════════════════════
+   BUSCAR PARA CLIENTE
+═══════════════════════════════════════════ */
+const ESTADO_PROP_LBL = {
+  nueva:                'Nueva',
+  usado_buen_estado:    'Usado - Buen estado',
+  usado_a_refaccionar:  'Usado - A refaccionar',
+  a_reciclar:            'A reciclar',
+  a_demoler:             'A demoler',
+};
+
+let bcResultadosActuales = [];
+
+document.querySelectorAll('#bcAntiguedad .chip-admin').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const todosChip = document.querySelector('#bcAntiguedad .chip-admin[data-val=""]');
+    if (chip.dataset.val === '') {
+      document.querySelectorAll('#bcAntiguedad .chip-admin').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+    } else {
+      todosChip.classList.remove('active');
+      chip.classList.toggle('active');
+      const activos = document.querySelectorAll('#bcAntiguedad .chip-admin.active');
+      if (!activos.length) todosChip.classList.add('active');
+    }
+  });
+});
+
+function limpiarFiltrosCliente() {
+  document.getElementById('bcOperacion').value  = '';
+  document.getElementById('bcTipo').value       = '';
+  document.getElementById('bcBarrio').value     = '';
+  document.getElementById('bcPrecioMin').value  = '';
+  document.getElementById('bcPrecioMax').value  = '';
+  document.getElementById('bcMoneda').value     = 'USD';
+  document.getElementById('bcAmbMin').value     = '';
+  document.getElementById('bcAmbMax').value     = '';
+  document.getElementById('bcSupMin').value     = '';
+  document.getElementById('bcSupMax').value     = '';
+  document.querySelectorAll('#bcAntiguedad .chip-admin').forEach(c => c.classList.remove('active'));
+  document.querySelector('#bcAntiguedad .chip-admin[data-val=""]').classList.add('active');
+  bcResultadosActuales = [];
+  document.getElementById('bcResultadosToolbar').hidden = true;
+  document.getElementById('bcResultados').innerHTML = '<p class="admin-state">Definí los filtros y presioná «Buscar».</p>';
+}
+
+async function buscarParaCliente() {
+  const wrap = document.getElementById('bcResultados');
+  wrap.innerHTML = '<p class="admin-state">Buscando…</p>';
+  document.getElementById('bcResultadosToolbar').hidden = true;
+
+  const params = new URLSearchParams();
+  params.set('todas', 'true');
+
+  const operacion = document.getElementById('bcOperacion').value;
+  const tipo      = document.getElementById('bcTipo').value;
+  const precioMin = document.getElementById('bcPrecioMin').value;
+  const precioMax = document.getElementById('bcPrecioMax').value;
+  const moneda    = document.getElementById('bcMoneda').value;
+  const antiguedadVals = [...document.querySelectorAll('#bcAntiguedad .chip-admin.active')]
+    .map(c => c.dataset.val).filter(Boolean);
+
+  if (operacion) params.set('operacion', operacion);
+  if (tipo)      params.set('tipo', tipo);
+  if (antiguedadVals.length) params.set('antiguedad', antiguedadVals.join(','));
+  if (precioMin) { params.set('precio_min', precioMin); params.set('moneda', moneda); }
+  if (precioMax) { params.set('precio_max', precioMax); params.set('moneda', moneda); }
+
+  try {
+    const r = await fetch(`${API_BASE}/propiedades?${params.toString()}`, { headers: authHdr() });
+    if (r.status === 401) { logout(); return; }
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    let items = await r.json();
+
+    // Filtros adicionales (no soportados por la API): barrio, ambientes, superficie
+    const barrio = document.getElementById('bcBarrio').value.trim().toLowerCase();
+    const ambMin = parseFloat(document.getElementById('bcAmbMin').value);
+    const ambMax = parseFloat(document.getElementById('bcAmbMax').value);
+    const supMin = parseFloat(document.getElementById('bcSupMin').value);
+    const supMax = parseFloat(document.getElementById('bcSupMax').value);
+
+    if (barrio) items = items.filter(p => (p.barrio || '').toLowerCase().includes(barrio));
+    if (!isNaN(ambMin)) items = items.filter(p => p.dormitorios != null && p.dormitorios >= ambMin);
+    if (!isNaN(ambMax)) items = items.filter(p => p.dormitorios != null && p.dormitorios <= ambMax);
+    if (!isNaN(supMin)) items = items.filter(p => p.superficie_total != null && p.superficie_total >= supMin);
+    if (!isNaN(supMax)) items = items.filter(p => p.superficie_total != null && p.superficie_total <= supMax);
+
+    bcResultadosActuales = items;
+    renderResultadosCliente(items);
+  } catch (err) {
+    wrap.innerHTML = `<p class="admin-state" style="color:var(--danger)">Error al buscar: ${escH(err.message)}</p>`;
+  }
+}
+
+function renderResultadosCliente(items) {
+  const wrap    = document.getElementById('bcResultados');
+  const toolbar = document.getElementById('bcResultadosToolbar');
+
+  if (!items.length) {
+    wrap.innerHTML = '<p class="admin-state">No hay propiedades que cumplan estos filtros.</p>';
+    toolbar.hidden = true;
+    return;
+  }
+
+  toolbar.hidden = false;
+  document.getElementById('bcCount').textContent =
+    items.length === 1 ? '1 propiedad encontrada' : `${items.length} propiedades encontradas`;
+
+  wrap.innerHTML = items.map(p => `
+    <div class="bc-card">
+      <input type="checkbox" class="bc-card__check" data-id="${p.id}" checked>
+      ${p.imagenes && p.imagenes[0]
+        ? `<img class="bc-card__img" src="${API_BASE}/${escH(p.imagenes[0])}" alt="" loading="lazy">`
+        : `<div class="bc-card__img bc-card__img-empty">Sin foto</div>`}
+      <div class="bc-card__body">
+        <div class="bc-card__dir">${escH(p.direccion || p.titulo)}</div>
+        <div class="bc-card__meta">${TIPO_LBL[p.tipo] || escH(p.tipo)} · ${OP_LABELS[p.operacion] || escH(p.operacion)}</div>
+        <div class="bc-card__meta">${p.superficie_total ? p.superficie_total + ' m² tot.' : 'Superficie s/d'}</div>
+        <div class="bc-card__precio">${fmtPrecio(p.precio, p.moneda)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function seleccionarTodasCliente(val) {
+  document.querySelectorAll('.bc-card__check').forEach(chk => { chk.checked = val; });
+}
+
+/* ─── Generación de PDF (jsPDF + autoTable) ─── */
+function imagenABase64(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width  = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      } catch {
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+}
+
+async function generarPDFCliente(btn) {
+  const seleccionadas = [...document.querySelectorAll('.bc-card__check:checked')]
+    .map(chk => parseInt(chk.dataset.id, 10));
+
+  if (!seleccionadas.length) {
+    alert('Seleccioná al menos una propiedad para el PDF.');
+    return;
+  }
+
+  const props = bcResultadosActuales.filter(p => seleccionadas.includes(p.id));
+  const textoOriginal = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Generando PDF…';
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc   = new jsPDF({ unit: 'mm', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const fechaGen = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+    const piePagina = () => {
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(140, 140, 140);
+      doc.text(
+        'Leonardo Graf Propiedades — Coronel Suárez 3131, Olavarría — Leonardo: +54 9 2284 224338 — Nicolás: +54 9 2284 478447',
+        pageW / 2, pageH - 10, { align: 'center' }
+      );
+    };
+
+    // ── Portada ──
+    doc.setFillColor(160, 0, 0);
+    doc.rect(0, 0, pageW, 60, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.text('Leonardo Graf Propiedades', pageW / 2, 28, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
+    doc.text('Olavarría, Buenos Aires', pageW / 2, 38, { align: 'center' });
+
+    doc.setTextColor(30, 30, 30);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.text('Selección de propiedades', pageW / 2, 100, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.text(`Generado el ${fechaGen}`, pageW / 2, 110, { align: 'center' });
+    doc.text(
+      props.length === 1 ? '1 propiedad seleccionada' : `${props.length} propiedades seleccionadas`,
+      pageW / 2, 118, { align: 'center' }
+    );
+    piePagina();
+
+    // ── Una página por propiedad ──
+    for (const p of props) {
+      doc.addPage();
+      let y = 18;
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 30, 30);
+      doc.text(p.direccion || p.titulo, 14, y);
+      y += 6;
+
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100, 100, 100);
+      doc.text(`${TIPO_LBL[p.tipo] || p.tipo}  ·  ${OP_LABELS[p.operacion] || p.operacion}`, 14, y);
+      y += 8;
+
+      if (p.imagenes && p.imagenes[0]) {
+        try {
+          const base64 = await imagenABase64(`${API_BASE}/${p.imagenes[0]}`);
+          if (base64) doc.addImage(base64, 'JPEG', 14, y, 90, 60);
+        } catch { /* si falla la imagen, se omite */ }
+      }
+
+      const filas = [
+        ['Precio',                 fmtPrecio(p.precio, p.moneda)],
+        ['Antigüedad',             ANTIGUEDAD_LBL[p.antiguedad] || '—'],
+        ['Estado',                 ESTADO_PROP_LBL[p.estado_propiedad] || '—'],
+        ['Superficie cubierta',    p.superficie_cubierta    ? `${p.superficie_cubierta} m²`    : '—'],
+        ['Superficie descubierta', p.superficie_descubierta ? `${p.superficie_descubierta} m²` : '—'],
+        ['Superficie total',       p.superficie_total       ? `${p.superficie_total} m²`       : '—'],
+        ['Barrio',                 p.barrio || '—'],
+      ];
+
+      doc.autoTable({
+        startY: y,
+        margin: { left: 112 },
+        theme: 'plain',
+        styles: { fontSize: 9, cellPadding: 1.5 },
+        columnStyles: { 0: { fontStyle: 'bold', textColor: [100, 100, 100] }, 1: { textColor: [30, 30, 30] } },
+        body: filas,
+      });
+
+      let yDesc = Math.max(y + 65, (doc.lastAutoTable?.finalY || y) + 8);
+      if (p.descripcion) {
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(30, 30, 30);
+        doc.text('Descripción', 14, yDesc);
+        yDesc += 5;
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(70, 70, 70);
+        const lineas = doc.splitTextToSize(p.descripcion, pageW - 28);
+        doc.text(lineas, 14, yDesc);
+      }
+
+      piePagina();
+    }
+
+    const fechaArchivo = new Date().toISOString().slice(0, 10);
+    doc.save(`Propiedades_LeonardoGraf_${fechaArchivo}.pdf`);
+  } catch (err) {
+    alert(`Error al generar el PDF: ${err.message}`);
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = textoOriginal;
   }
 }
 </script>

@@ -24,6 +24,15 @@ class Propiedad(Base):
     poligono_zona  = Column(Text, nullable=True)           # JSON string: [[lat, lng], ...] para chacra_campo / quinta
     dimension_m2   = Column(Float, nullable=True)          # superficie del terreno en m²
 
+    superficie_cubierta    = Column(Float, nullable=True)      # m²
+    superficie_descubierta = Column(Float, nullable=True)      # m²
+    superficie_total       = Column(Float, nullable=True)      # m²
+    estado_propiedad       = Column(String(30), nullable=True) # nueva | usado_buen_estado | usado_a_refaccionar | a_reciclar | a_demoler
+    destacada               = Column(Boolean, default=False)
+    estado_operacion        = Column(String(20), default="activa")  # activa | pausada | alquilada | vendida
+    precio_venta_final      = Column(Float, nullable=True)     # precio al que se vendió/alquiló
+    moneda_venta_final      = Column(String(3), nullable=True) # USD | ARS — moneda de precio_venta_final
+
 
 class Mensaje(Base):
     __tablename__ = "mensajes"

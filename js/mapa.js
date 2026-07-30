@@ -95,7 +95,7 @@ function _agregarMarcadorOficina() {
   marcadorOficina = L.marker([OFICINA_LAT, OFICINA_LNG], { icon, zIndexOffset: 1000 })
     .bindPopup(`
       <div style="text-align:center;padding:4px 2px;min-width:180px">
-        <strong style="font-size:13px;color:#1A1A1A">Leonardograf Propiedades</strong><br>
+        <strong style="font-size:13px;color:#1A1A1A">Leonardo Graf Propiedades</strong><br>
         <span style="font-size:11px;color:#666;line-height:1.6">Coronel Suárez 3131<br>Olavarría, Buenos Aires</span><br>
         <a href="https://maps.google.com/?q=-36.8973565,-60.3211236"
            target="_blank" rel="noopener noreferrer"

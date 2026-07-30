@@ -1,0 +1,106 @@
+/* ───────────────────────────────────────────
+   Sueños Cumplidos
+─────────────────────────────────────────── */
+.suenos-cumplidos {
+  padding-block: var(--spacing-3xl);
+  background-color: var(--color-bg-soft);
+}
+
+.sc__header {
+  text-align: center;
+  margin-bottom: var(--spacing-2xl);
+}
+
+.sc__header .section-subtitle {
+  max-width: 560px;
+  margin-inline: auto;
+}
+
+.sc__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.sc__empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-md);
+}
+
+.sc-card {
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.sc-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.sc-card__img-wrap {
+  position: relative;
+  aspect-ratio: 4/3;
+  background: var(--color-border);
+}
+
+.sc-card__img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.sc-card__badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #fff;
+}
+
+.sc-card__badge--vendida {
+  background: #16a34a;
+}
+
+.sc-card__badge--alquilada {
+  background: #2563eb;
+}
+
+.sc-card__body {
+  padding: var(--spacing-md) var(--spacing-lg) var(--spacing-lg);
+}
+
+.sc-card__tipo {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.sc-card__dir {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-sm);
+}
+
+.sc-card__precio {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-precio);
+}

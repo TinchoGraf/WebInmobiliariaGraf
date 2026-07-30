@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Leonardograf Propiedades API", version="2.0.0", lifespan=lifespan)
+app = FastAPI(title="Leonardo Graf Propiedades API", version="2.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -86,6 +86,14 @@ class PropiedadIn(BaseModel):
     poligono_zona: Optional[str]   = None
     dimension_m2:  Optional[float] = None
 
+    superficie_cubierta:    Optional[float] = None
+    superficie_descubierta: Optional[float] = None
+    superficie_total:       Optional[float] = None
+    estado_propiedad:       Optional[str]   = None
+    estado_operacion:       str             = "activa"
+    precio_venta_final:     Optional[float] = None
+    moneda_venta_final:     Optional[str]   = None
+
 
 class PropiedadOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -108,6 +116,15 @@ class PropiedadOut(BaseModel):
     poligono_zona:  Optional[str]
     dimension_m2:   Optional[float]
 
+    superficie_cubierta:    Optional[float]
+    superficie_descubierta: Optional[float]
+    superficie_total:       Optional[float]
+    estado_propiedad:       Optional[str]
+    destacada:               bool
+    estado_operacion:        str
+    precio_venta_final:      Optional[float]
+    moneda_venta_final:      Optional[str]
+
     @field_validator("imagenes", mode="before")
     @classmethod
     def parse_imagenes(cls, v):
@@ -121,6 +138,12 @@ class PropiedadOut(BaseModel):
         if hasattr(v, "isoformat"):
             return v.isoformat()
         return str(v) if v else ""
+
+
+class EstadoOperacionIn(BaseModel):
+    estado_operacion:   str
+    precio_venta_final: Optional[float] = None
+    moneda_venta_final: Optional[str]   = None
 
 
 class MensajeIn(BaseModel):
@@ -174,18 +197,28 @@ def health():
 
 @app.get("/propiedades", response_model=list[PropiedadOut])
 def listar_propiedades(
-    operacion:  Optional[str]   = Query(None),
-    tipo:       Optional[str]   = Query(None),
-    antiguedad: Optional[str]   = Query(None),
-    precio_min: Optional[float] = Query(None),
-    precio_max: Optional[float] = Query(None),
-    moneda:     Optional[str]   = Query(None),
-    todas:      bool            = Query(False, description="Si True incluye propiedades inactivas"),
+    operacion:        Optional[str]   = Query(None),
+    tipo:             Optional[str]   = Query(None),
+    antiguedad:       Optional[str]   = Query(None),
+    precio_min:       Optional[float] = Query(None),
+    precio_max:       Optional[float] = Query(None),
+    moneda:           Optional[str]   = Query(None),
+    todas:            bool            = Query(False, description="Si True incluye propiedades en cualquier estado de operación"),
+    estado_operacion: Optional[str]   = Query(None, description="Filtra por estado de operación (activa | pausada | alquilada | vendida)"),
+    seccion:          Optional[str]   = Query(None, description="'suenos_cumplidos' devuelve solo vendidas/alquiladas con precio_venta_final cargado"),
     db: Session = Depends(get_db),
 ):
     q = db.query(Propiedad)
-    if not todas:
-        q = q.filter(Propiedad.activa == True)  # noqa: E712
+
+    if seccion == "suenos_cumplidos":
+        q = q.filter(Propiedad.estado_operacion.in_(["vendida", "alquilada"]))
+        q = q.filter(Propiedad.precio_venta_final.isnot(None))
+    elif todas:
+        if estado_operacion:
+            q = q.filter(Propiedad.estado_operacion == estado_operacion)
+    else:
+        q = q.filter(Propiedad.estado_operacion == (estado_operacion or "activa"))
+
     if operacion:  q = q.filter(Propiedad.operacion == operacion)
     if tipo:       q = q.filter(Propiedad.tipo == tipo)
     if antiguedad:
@@ -194,7 +227,7 @@ def listar_propiedades(
     if moneda:                 q = q.filter(Propiedad.moneda == moneda)
     if precio_min is not None: q = q.filter(Propiedad.precio >= precio_min)
     if precio_max is not None: q = q.filter(Propiedad.precio <= precio_max)
-    return q.all()
+    return q.order_by(Propiedad.destacada.desc(), Propiedad.fecha_creacion.desc()).all()
 
 
 @app.get("/propiedades/{prop_id}", response_model=PropiedadOut)
@@ -238,6 +271,37 @@ def toggle_propiedad(
 ):
     prop = get_prop_or_404(prop_id, db)
     prop.activa = not prop.activa
+    db.commit()
+    db.refresh(prop)
+    return prop
+
+
+@app.patch("/propiedades/{prop_id}/destacada", response_model=PropiedadOut)
+def toggle_destacada(
+    prop_id: int,
+    db: Session = Depends(get_db),
+    _: str = Depends(require_auth),
+):
+    prop = get_prop_or_404(prop_id, db)
+    prop.destacada = not prop.destacada
+    db.commit()
+    db.refresh(prop)
+    return prop
+
+
+@app.patch("/propiedades/{prop_id}/estado_operacion", response_model=PropiedadOut)
+def actualizar_estado_operacion(
+    prop_id: int,
+    datos: EstadoOperacionIn,
+    db: Session = Depends(get_db),
+    _: str = Depends(require_auth),
+):
+    prop = get_prop_or_404(prop_id, db)
+    prop.estado_operacion = datos.estado_operacion
+    if datos.precio_venta_final is not None:
+        prop.precio_venta_final = datos.precio_venta_final
+    if datos.moneda_venta_final is not None:
+        prop.moneda_venta_final = datos.moneda_venta_final
     db.commit()
     db.refresh(prop)
     return prop

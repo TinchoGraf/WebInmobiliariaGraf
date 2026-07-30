@@ -181,10 +181,11 @@
 
 .qs__team-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-xl);
-  max-width: 360px;
+  max-width: 920px;
   margin-inline: auto;
+  align-items: start;
 }
 
 .team-card {
@@ -192,12 +193,40 @@
   border-radius: var(--radius-lg);
   padding: var(--spacing-xl);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   transition: transform var(--transition), box-shadow var(--transition);
 }
 
 .team-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-md);
+}
+
+/* Card destacada: Leonardo, al centro */
+.team-card--leader {
+  border-top: 3px solid var(--color-accent);
+  box-shadow: var(--shadow-md);
+  background: var(--color-bg-elevated);
+  padding-top: calc(var(--spacing-xl) - 6px);
+}
+
+.team-card--leader:hover {
+  transform: translateY(-6px);
+}
+
+.team-card__badge {
+  display: inline-block;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  margin-bottom: var(--spacing-md);
 }
 
 .team-card__avatar {
@@ -220,6 +249,21 @@
   display: block;
 }
 
+.team-card__avatar--initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-accent);
+}
+
+.team-card--leader .team-card__avatar {
+  width: 112px;
+  height: 112px;
+}
+
 .team-card__name {
   font-size: var(--font-size-lg);
   font-weight: 700;
@@ -234,28 +278,13 @@
   margin-bottom: var(--spacing-md);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  line-height: 1.4;
 }
 
-.team-card__desc {
+.team-card__wa {
+  margin-top: auto;
   font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  line-height: 1.7;
-  margin-bottom: var(--spacing-md);
-}
-
-.team-card__linkedin {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: #25d366;
-  text-decoration: none;
-  transition: opacity var(--transition);
-}
-
-.team-card__linkedin:hover {
-  opacity: 0.75;
+  padding: 0.6rem 1.25rem;
 }
 
 /* ── Instagram CTA ─────────────────────────── */
@@ -310,12 +339,18 @@
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 768px) {
   .qs__team-grid {
     grid-template-columns: 1fr;
     max-width: 360px;
   }
 
+  .team-card--leader {
+    order: -1;
+  }
+}
+
+@media (max-width: 560px) {
   .qs__stats {
     grid-template-columns: repeat(2, 1fr);
   }
