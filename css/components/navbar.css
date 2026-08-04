@@ -82,10 +82,12 @@
   position: absolute;
   bottom: -2px;
   left: 0;
-  width: 0;
+  width: 100%;
   height: 2px;
   background-color: var(--color-accent);
-  transition: width var(--transition);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition);
   border-radius: var(--radius-full);
 }
 
@@ -96,7 +98,7 @@
 
 .navbar__link:hover::after,
 .navbar__link.active::after {
-  width: 100%;
+  transform: scaleX(1);
 }
 
 /* CTA en navbar */
@@ -131,7 +133,7 @@
   height: 2px;
   background-color: var(--color-text);
   border-radius: var(--radius-full);
-  transition: transform var(--transition), opacity var(--transition), width var(--transition);
+  transition: transform var(--transition), opacity var(--transition);
   transform-origin: center;
 }
 
@@ -141,7 +143,7 @@
 }
 .navbar__toggle.open span:nth-child(2) {
   opacity: 0;
-  width: 0;
+  transform: scaleX(0);
 }
 .navbar__toggle.open span:nth-child(3) {
   transform: translateY(-7px) rotate(-45deg);

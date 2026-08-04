@@ -70,6 +70,10 @@
 }
 
 .filtro-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
   padding: 0.45rem 1.1rem;
   border-radius: var(--radius-full);
   font-size: var(--font-size-sm);

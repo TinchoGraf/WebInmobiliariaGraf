@@ -33,7 +33,7 @@
   border-radius: 6px;
   padding: 6px 10px;
   font-size: 12px;
-  font-family: Inter, sans-serif;
+  font-family: 'Bricolage Grotesque', sans-serif;
   color: rgba(255, 255, 255, 0.85);
   pointer-events: none;
   display: flex;
@@ -73,11 +73,15 @@
 }
 
 .chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
   padding: 0.3rem 0.75rem;
   border-radius: var(--radius-full, 999px);
   font-size: var(--font-size-sm, 0.875rem);
   font-weight: 500;
-  font-family: var(--font-family, Inter, sans-serif);
+  font-family: var(--font-family, 'Bricolage Grotesque', sans-serif);
   border: 1.5px solid var(--color-border, rgba(255,255,255,0.12));
   background-color: var(--color-bg-elevated, #2C2C2C);
   color: var(--color-text-muted, rgba(255,255,255,0.60));

@@ -20,17 +20,6 @@
   z-index: 1;
 }
 
-/* Textura sutil de puntos */
-.hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
-  background-size: 32px 32px;
-  z-index: 1;
-  pointer-events: none;
-}
-
 .hero__inner {
   position: relative;
   z-index: 2;
@@ -147,12 +136,18 @@
   width: 28px;
   height: 28px;
   color: rgba(255, 255, 255, 0.65);
-  animation: arrow-bounce 1.6s ease-in-out infinite;
+  animation: arrow-nudge 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
 
-@keyframes arrow-bounce {
+@keyframes arrow-nudge {
   0%, 100% { transform: translateY(0); }
   50%       { transform: translateY(8px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__arrow {
+    animation: none;
+  }
 }
 
 @keyframes hero-fade-in {

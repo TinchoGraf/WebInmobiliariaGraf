@@ -15,18 +15,7 @@
    Variables globales — sistema de diseño
 ─────────────────────────────────────────── */
 :root {
-  /* Paleta principal — colores oficiales de la marca */
-  --color-primario:         #E7423A;
-  --color-primario-hover:   #CF3830;
-  --color-gris-principal:   #757575;
-  --color-gris-oscuro:      #5E5E5E;
-  --color-gris-claro:       #9A9A9A;
-  --color-blanco:           #FFFFFF;
-  --color-fondo:            #F5F5F5;
-  --color-texto:            #1A1A1A;
-  --color-texto-secundario: #5E5E5E;
-
-  /* Aliases usados por los componentes */
+  /* Paleta — colores de marca */
   --color-bg:           #0E1114;   /* header/footer — negro azulado */
   --color-bg-soft:      #1C2126;   /* fondo principal */
   --color-bg-elevated:  #252B32;   /* filas alternas / cards */
@@ -41,7 +30,7 @@
   --color-border:       rgba(255, 255, 255, 0.12);
 
   /* Tipografía */
-  --font-family: 'Inter', sans-serif;
+  --font-family: 'Bricolage Grotesque', sans-serif;
   --font-size-xs:  0.75rem;   /* 12px */
   --font-size-sm:  0.875rem;  /* 14px */
   --font-size-md:  1rem;      /* 16px */
@@ -236,7 +225,7 @@ input, textarea, select {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.18s;
-  font-family: var(--font-family, 'Inter', sans-serif);
+  font-family: var(--font-family, 'Bricolage Grotesque', sans-serif);
 }
 .wpp-float__tooltip::after {
   content: '';
@@ -251,4 +240,11 @@ input, textarea, select {
 @keyframes wpp-pulse {
   0%, 100% { box-shadow: 0 4px 20px rgba(37,211,102,0.4); }
   50%       { box-shadow: 0 4px 30px rgba(37,211,102,0.65), 0 0 0 10px rgba(37,211,102,0.12); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wpp-float {
+    animation: none;
+    box-shadow: 0 4px 30px rgba(37,211,102,0.65), 0 0 0 10px rgba(37,211,102,0.12);
+  }
 }
