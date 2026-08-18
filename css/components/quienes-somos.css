@@ -333,13 +333,6 @@
 }
 
 @media (max-width: 768px) {
-  .qs__stats {
-    grid-template-columns: repeat(2, 1fr);
-    padding: var(--spacing-lg);
-  }
-}
-
-@media (max-width: 768px) {
   .qs__team-grid {
     grid-template-columns: 1fr;
     max-width: 360px;
@@ -350,8 +343,28 @@
   }
 }
 
-@media (max-width: 560px) {
+/* Tablet: 2 columnas, con gap suficiente para que no se corte nada */
+@media (min-width: 601px) and (max-width: 900px) {
   .qs__stats {
     grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    overflow: visible;
+  }
+}
+
+/* Mobile: 1 sola columna, cards apiladas y centradas */
+@media (max-width: 600px) {
+  .qs__stats {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg) var(--spacing-md);
+    overflow: visible;
+  }
+
+  .qs__stat {
+    width: 100%;
+    text-align: center;
+    padding: var(--spacing-md);
   }
 }
