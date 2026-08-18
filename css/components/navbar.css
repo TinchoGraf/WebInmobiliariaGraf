@@ -101,12 +101,6 @@
   transform: scaleX(1);
 }
 
-/* CTA en navbar */
-.navbar__cta {
-  padding: 0.5rem 1.25rem;
-  font-size: var(--font-size-sm);
-}
-
 /* Hamburguesa */
 .navbar__toggle {
   display: none;
@@ -185,11 +179,5 @@
 
   .navbar__link {
     font-size: var(--font-size-lg);
-  }
-
-  .navbar__cta {
-    width: 100%;
-    justify-content: center;
-    margin-top: var(--spacing-sm);
   }
 }

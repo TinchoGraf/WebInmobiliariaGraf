@@ -250,6 +250,14 @@ a.contacto__card:hover {
   justify-content: center;
   flex-shrink: 0;
   letter-spacing: 0.02em;
+  overflow: hidden;
+}
+
+.contacto__wa-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .contacto__wa-name {
