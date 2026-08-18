@@ -17,6 +17,7 @@ env/
 # Base de datos local
 backend/inmobiliaria.db
 backend/*.db
+backend/backup/
 
 # Graphify (generado automáticamente)
 graphify-out/

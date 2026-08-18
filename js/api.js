@@ -1,6 +1,8 @@
 /* api.js — comunicación con el backend FastAPI */
 
-const API_BASE = 'http://localhost:8000'; // cambiar al dominio real en producción
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:8000'
+  : 'https://leonardograf-api.onrender.com'; // TODO: reemplazar por la URL real una vez creado el servicio en Render
 
 async function apiFetch(endpoint, opts = {}) {
   const res = await fetch(`${API_BASE}${endpoint}`, {

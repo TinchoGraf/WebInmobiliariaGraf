@@ -597,7 +597,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
 /* ─── Config ─────────────────────────────── */
-const API_BASE = 'http://localhost:8000';
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:8000'
+  : 'https://leonardograf-api.onrender.com'; // TODO: reemplazar por la URL real una vez creado el servicio en Render
 
 /* ─── Estado global ──────────────────────── */
 let creds        = sessionStorage.getItem('lgraf_auth');
