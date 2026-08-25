@@ -1,12 +1,12 @@
 import json
 import os
 import secrets
-import shutil
-import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
 
+import cloudinary
+import cloudinary.uploader
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,6 +19,12 @@ from database import get_db, init_db
 from models import Mensaje, Propiedad
 
 load_dotenv()
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+)
 
 ADMIN_USER = os.getenv("ADMIN_USER")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
@@ -329,12 +335,8 @@ def subir_imagenes(
     imagenes: list[str] = json.loads(prop.imagenes or "[]")
 
     for archivo in archivos:
-        ext    = Path(archivo.filename).suffix.lower() if archivo.filename else ".jpg"
-        nombre = f"prop_{prop_id}_{uuid.uuid4().hex[:8]}{ext}"
-        dest   = IMAGES_DIR / nombre
-        with dest.open("wb") as f:
-            shutil.copyfileobj(archivo.file, f)
-        imagenes.append(f"assets/images/{nombre}")
+        resultado = cloudinary.uploader.upload(archivo.file, folder="leonardograf")
+        imagenes.append(resultado["secure_url"])
 
     prop.imagenes = json.dumps(imagenes)
     db.commit()

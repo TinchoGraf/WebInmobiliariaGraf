@@ -768,7 +768,7 @@ const ANTIGUEDAD_LBL = {
 function thumbHtml(p) {
   const noImg = `<div class="thumb-empty"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>`;
   if (!p.imagenes || !p.imagenes[0]) return noImg;
-  return `<img class="thumb" src="${API_BASE}/${escH(p.imagenes[0])}" alt="" loading="lazy" onerror="this.outerHTML='${noImg.replace(/'/g,"&#39;")}'" >`;
+  return `<img class="thumb" src="${escH(p.imagenes[0])}" alt="" loading="lazy" onerror="this.outerHTML='${noImg.replace(/'/g,"&#39;")}'" >`;
 }
 
 function renderTable(list) {
@@ -1039,7 +1039,7 @@ function openEdit(id) {
   const grid = document.getElementById('previewGrid');
   grid.innerHTML = (p.imagenes || []).map(src => `
     <div class="preview-item">
-      <img src="${API_BASE}/${escH(src)}" alt="foto existente" loading="lazy">
+      <img src="${escH(src)}" alt="foto existente" loading="lazy">
       <span class="existing-label">Existente</span>
     </div>`).join('');
 
@@ -1499,7 +1499,7 @@ function renderResultadosCliente(items) {
     <div class="bc-card">
       <input type="checkbox" class="bc-card__check" data-id="${p.id}" checked>
       ${p.imagenes && p.imagenes[0]
-        ? `<img class="bc-card__img" src="${API_BASE}/${escH(p.imagenes[0])}" alt="" loading="lazy">`
+        ? `<img class="bc-card__img" src="${escH(p.imagenes[0])}" alt="" loading="lazy">`
         : `<div class="bc-card__img bc-card__img-empty">Sin foto</div>`}
       <div class="bc-card__body">
         <div class="bc-card__dir">${escH(p.direccion || p.titulo)}</div>
@@ -1609,7 +1609,7 @@ async function generarPDFCliente(btn) {
 
       if (p.imagenes && p.imagenes[0]) {
         try {
-          const base64 = await imagenABase64(`${API_BASE}/${p.imagenes[0]}`);
+          const base64 = await imagenABase64(p.imagenes[0]);
           if (base64) doc.addImage(base64, 'JPEG', 14, y, 90, 60);
         } catch { /* si falla la imagen, se omite */ }
       }

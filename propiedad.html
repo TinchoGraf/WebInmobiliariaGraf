@@ -400,7 +400,6 @@
   });
 
   /* ── Galería ─────────────────────────────────────────────── */
-  const API_IMGS = 'http://localhost:8000';
 
   function buildGaleria(imagenes, titulo) {
     if (!imagenes.length) {
@@ -414,13 +413,13 @@
       </div>`;
     }
 
-    const mainSrc   = `${API_IMGS}/${imagenes[0]}`;
+    const mainSrc   = imagenes[0];
     const thumbsHtml = imagenes.map((src, i) => `
       <img class="galeria__thumb${i === 0 ? ' active' : ''}"
-           src="${API_IMGS}/${src}"
+           src="${src}"
            alt="Foto ${i + 1} de ${titulo}"
            loading="lazy"
-           data-src="${API_IMGS}/${src}">`).join('');
+           data-src="${src}">`).join('');
 
     return `<div class="galeria">
       <div class="galeria__main" id="galeriaMain">
