@@ -33,6 +33,9 @@ desktop.ini
 *.swp
 *.swo
 
+# Claude Code (config personal, no compartida)
+.claude/settings.local.json
+
 # Node (por si se agrega build tooling luego)
 node_modules/
 
