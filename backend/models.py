@@ -10,7 +10,7 @@ class Propiedad(Base):
     titulo         = Column(String(200), nullable=False)
     descripcion    = Column(Text, nullable=True)
     operacion      = Column(String(20), nullable=False)   # venta | alquiler | alquiler_temp
-    tipo           = Column(String(30), nullable=False)    # casa | departamento | terreno | comercial | chacra_campo | quinta
+    tipo           = Column(String(30), nullable=False)    # casa | departamento | lote | comercial | chacra_campo | quinta
     antiguedad     = Column(String(20), nullable=True)     # a_estrenar | 1_10 | 10_20 | mas_20
     precio         = Column(Float, nullable=False)
     moneda         = Column(String(3), default="USD")
@@ -27,7 +27,8 @@ class Propiedad(Base):
     superficie_cubierta    = Column(Float, nullable=True)      # m²
     superficie_descubierta = Column(Float, nullable=True)      # m²
     superficie_total       = Column(Float, nullable=True)      # m²
-    estado_propiedad       = Column(String(30), nullable=True) # nueva | usado_buen_estado | usado_a_refaccionar | a_reciclar | a_demoler
+    estado_propiedad       = Column(String(30), nullable=True) # nueva | usado_buen_estado | usado_regular | usado_a_refaccionar | a_reciclar | a_demoler
+    cantidad_pisos          = Column(Integer, nullable=True)   # cantidad de pisos de la construcción
     destacada               = Column(Boolean, default=False)
     estado_operacion        = Column(String(20), default="activa")  # activa | pausada | alquilada | vendida
     precio_venta_final      = Column(Float, nullable=True)     # precio al que se vendió/alquiló

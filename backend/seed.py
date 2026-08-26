@@ -31,7 +31,7 @@ SEED_DATA = [
     dict(
         titulo="Terreno residencial zona norte",
         descripcion="Terreno plano de 600 m2 en zona residencial en crecimiento. Cuenta con agua, luz y cloacas. Apto banco hipotecario.",
-        operacion="venta", tipo="terreno", antiguedad=None,
+        operacion="venta", tipo="lote", antiguedad=None,
         precio=18000, moneda="USD",
         direccion="Calle 12 y Av. Colon, Olavarria", barrio="Zona Norte",
         lat=-36.8780, lng=-60.3150, imagenes=json.dumps(["assets/images/prop_4_5be02755.jpg"]),
@@ -64,7 +64,7 @@ SEED_DATA = [
     dict(
         titulo="Terreno en barrio privado Parque",
         descripcion="Terreno de 400 m2 dentro de barrio cerrado con porteria 24 h, acceso a areas verdes, SUM y cancha de tenis.",
-        operacion="venta", tipo="terreno", antiguedad=None,
+        operacion="venta", tipo="lote", antiguedad=None,
         precio=22000, moneda="USD",
         direccion="Sarmiento 1800, Olavarria", barrio="Barrio Parque",
         lat=-36.8890, lng=-60.3340, imagenes=json.dumps(["assets/images/prop_8_02896b0e.jpg"]),

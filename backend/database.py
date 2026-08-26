@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./inmobiliaria.db")
@@ -29,3 +29,19 @@ def get_db():
 def init_db():
     from models import Propiedad  # noqa: ensure table is registered with Base.metadata
     Base.metadata.create_all(bind=engine)
+    _migrar_columnas_nuevas()
+
+
+def _migrar_columnas_nuevas():
+    """Agrega columnas nuevas a tablas ya existentes (create_all no las modifica)."""
+    columnas_nuevas = {
+        "cantidad_pisos": "INTEGER",
+    }
+    inspector = inspect(engine)
+    existentes = {col["name"] for col in inspector.get_columns("propiedades")}
+    faltantes = {nombre: tipo for nombre, tipo in columnas_nuevas.items() if nombre not in existentes}
+    if not faltantes:
+        return
+    with engine.begin() as conn:
+        for nombre, tipo in faltantes.items():
+            conn.execute(text(f"ALTER TABLE propiedades ADD COLUMN {nombre} {tipo}"))

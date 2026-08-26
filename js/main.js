@@ -79,7 +79,7 @@ function _actualizarContador(total) {
 /* ── Cards ───────────────────────────────────── */
 
 const TIPO_LABELS = {
-  casa: 'Casa', departamento: 'Departamento', terreno: 'Terreno',
+  casa: 'Casa', departamento: 'Departamento', terreno: 'Terreno', lote: 'Lote',
   comercial: 'Comercial', chacra_campo: 'Chacra / Campo', quinta: 'Quinta', ph: 'PH',
 };
 const ANTIGUEDAD_LABELS = {

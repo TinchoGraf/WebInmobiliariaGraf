@@ -96,6 +96,7 @@ class PropiedadIn(BaseModel):
     superficie_descubierta: Optional[float] = None
     superficie_total:       Optional[float] = None
     estado_propiedad:       Optional[str]   = None
+    cantidad_pisos:         Optional[int]   = None
     estado_operacion:       str             = "activa"
     precio_venta_final:     Optional[float] = None
     moneda_venta_final:     Optional[str]   = None
@@ -126,6 +127,7 @@ class PropiedadOut(BaseModel):
     superficie_descubierta: Optional[float]
     superficie_total:       Optional[float]
     estado_propiedad:       Optional[str]
+    cantidad_pisos:         Optional[int]
     destacada:               bool
     estado_operacion:        str
     precio_venta_final:      Optional[float]

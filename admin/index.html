@@ -280,7 +280,7 @@
               <option value="">Todos</option>
               <option value="casa">Casa</option>
               <option value="departamento">Departamento</option>
-              <option value="terreno">Terreno</option>
+              <option value="lote">Lote</option>
               <option value="comercial">Comercial</option>
               <option value="chacra_campo">Chacra / Campo</option>
               <option value="quinta">Quinta</option>
@@ -403,7 +403,7 @@
               <option value="">Seleccioná…</option>
               <option value="casa">Casa</option>
               <option value="departamento">Departamento</option>
-              <option value="terreno">Terreno</option>
+              <option value="lote">Lote</option>
               <option value="comercial">Comercial</option>
               <option value="chacra_campo">Chacra / Campo</option>
               <option value="quinta">Quinta</option>
@@ -463,7 +463,7 @@
 
         <div class="form-group">
           <p class="form-section-title">Superficies</p>
-          <div class="form-row" style="grid-template-columns: repeat(3,1fr)">
+          <div class="form-row" style="grid-template-columns: repeat(4,1fr)">
             <div class="form-group">
               <label>Cubierta (m²)</label>
               <input type="number" name="superficie_cubierta" id="fieldSupCubierta" min="0" step="0.01" placeholder="0">
@@ -476,6 +476,10 @@
               <label>Total (m²)</label>
               <input type="number" name="superficie_total" id="fieldSupTotal" min="0" step="0.01" placeholder="0">
             </div>
+            <div class="form-group">
+              <label>Cantidad de pisos</label>
+              <input type="number" name="cantidad_pisos" id="fieldCantidadPisos" min="0" step="1" placeholder="Ej: 2">
+            </div>
           </div>
         </div>
 
@@ -486,6 +490,7 @@
               <option value="">Sin especificar</option>
               <option value="nueva">Nueva</option>
               <option value="usado_buen_estado">Usado - Buen estado</option>
+              <option value="usado_regular">Usado - Estado regular</option>
               <option value="usado_a_refaccionar">Usado - A refaccionar</option>
               <option value="a_reciclar">A reciclar</option>
               <option value="a_demoler">A demoler</option>
@@ -758,7 +763,7 @@ document.getElementById('searchInput').addEventListener('input', function () {
 const OP_LABELS = { venta: 'Venta', alquiler: 'Alquiler', alquiler_temp: 'Alq. temporal' };
 const OP_CSS    = { venta: 'op-venta', alquiler: 'op-alquiler', alquiler_temp: 'op-temp' };
 const TIPO_LBL  = {
-  casa: 'Casa', departamento: 'Depto.', terreno: 'Terreno',
+  casa: 'Casa', departamento: 'Depto.', terreno: 'Lote', lote: 'Lote',
   comercial: 'Comercial', chacra_campo: 'Chacra / Campo', quinta: 'Quinta',
 };
 const ANTIGUEDAD_LBL = {
@@ -1023,6 +1028,7 @@ function openEdit(id) {
   if (fm.elements.superficie_cubierta && p.superficie_cubierta != null) fm.elements.superficie_cubierta.value = p.superficie_cubierta;
   if (fm.elements.superficie_descubierta && p.superficie_descubierta != null) fm.elements.superficie_descubierta.value = p.superficie_descubierta;
   if (fm.elements.superficie_total && p.superficie_total != null) fm.elements.superficie_total.value = p.superficie_total;
+  if (fm.elements.cantidad_pisos && p.cantidad_pisos != null) fm.elements.cantidad_pisos.value = p.cantidad_pisos;
   if (fm.elements.precio_venta_final && p.precio_venta_final != null) fm.elements.precio_venta_final.value = p.precio_venta_final;
   if (fm.elements.moneda_venta_final && p.moneda_venta_final) fm.elements.moneda_venta_final.value = p.moneda_venta_final;
   document.getElementById('seccionPrecioFinal').hidden = !['alquilada','vendida'].includes(p.estado_operacion);
@@ -1090,14 +1096,6 @@ document.getElementById('selectEstadoOperacion').addEventListener('change', func
   document.getElementById('seccionPrecioFinal').hidden = !['alquilada','vendida'].includes(this.value);
 });
 
-/* ─── Superficies: autocálculo del total ─────────── */
-function recalcularSuperficieTotal() {
-  const cub  = parseFloat(document.getElementById('fieldSupCubierta').value)    || 0;
-  const desc = parseFloat(document.getElementById('fieldSupDescubierta').value) || 0;
-  document.getElementById('fieldSupTotal').value = (cub || desc) ? (cub + desc) : '';
-}
-document.getElementById('fieldSupCubierta').addEventListener('input', recalcularSuperficieTotal);
-document.getElementById('fieldSupDescubierta').addEventListener('input', recalcularSuperficieTotal);
 
 /* ─── Mapa picker (ubicación) ─────────────── */
 const PICKER_ICON = () => L.divIcon({
@@ -1326,6 +1324,7 @@ async function saveForm(activa) {
     superficie_cubierta:    parseFloat(fm.elements.superficie_cubierta.value)    || null,
     superficie_descubierta: parseFloat(fm.elements.superficie_descubierta.value) || null,
     superficie_total:       parseFloat(fm.elements.superficie_total.value)       || null,
+    cantidad_pisos:         parseInt(fm.elements.cantidad_pisos.value, 10)       || null,
     estado_propiedad:       fm.elements.estado_propiedad.value || null,
     estado_operacion:       fm.elements.estado_operacion.value || 'activa',
     precio_venta_final:     parseFloat(fm.elements.precio_venta_final.value) || null,
@@ -1393,6 +1392,7 @@ async function saveForm(activa) {
 const ESTADO_PROP_LBL = {
   nueva:                'Nueva',
   usado_buen_estado:    'Usado - Buen estado',
+  usado_regular:        'Usado - Estado regular',
   usado_a_refaccionar:  'Usado - A refaccionar',
   a_reciclar:            'A reciclar',
   a_demoler:             'A demoler',
@@ -1621,6 +1621,7 @@ async function generarPDFCliente(btn) {
         ['Superficie cubierta',    p.superficie_cubierta    ? `${p.superficie_cubierta} m²`    : '—'],
         ['Superficie descubierta', p.superficie_descubierta ? `${p.superficie_descubierta} m²` : '—'],
         ['Superficie total',       p.superficie_total       ? `${p.superficie_total} m²`       : '—'],
+        ['Cantidad de pisos',      p.cantidad_pisos != null ? p.cantidad_pisos                   : '—'],
         ['Barrio',                 p.barrio || '—'],
       ];
 
