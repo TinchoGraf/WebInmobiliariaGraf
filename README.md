@@ -174,7 +174,8 @@ Funciones disponibles:
 | PUT | `/propiedades/{id}` | Sí | Editar propiedad |
 | PATCH | `/propiedades/{id}/toggle` | Sí | Activar/pausar publicación |
 | DELETE | `/propiedades/{id}` | Sí | Eliminar propiedad |
-| POST | `/propiedades/{id}/imagenes` | Sí | Subir fotos |
+| POST | `/propiedades/{id}/imagenes` | Sí | Subir fotos (se agregan al final) |
+| PUT | `/propiedades/{id}/imagenes/orden` | Sí | Reemplazar la lista ordenada de fotos (`imagenes[0]` = portada); borra de Cloudinary las quitadas |
 
 Auth = HTTP Basic Authentication (usuario y contraseña definidos en `.env`)
 

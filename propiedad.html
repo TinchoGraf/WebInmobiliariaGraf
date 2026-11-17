@@ -132,6 +132,20 @@
       margin-bottom: var(--spacing-lg);
     }
     .detalle__ubicacion svg { flex-shrink: 0; margin-top: 1px; }
+    .detalle__ubicacion--con-barrio { margin-bottom: 4px; }
+    .detalle__barrio {
+      padding-left: 20px; /* aligns with address text (icon 14px + gap 6px) */
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-lg);
+    }
+    .detalle__barrio-label {
+      font-size: 0.75em;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text);
+    }
 
     .detalle__divider { border: none; border-top: 1px solid var(--color-border); margin: var(--spacing-lg) 0; }
 
@@ -323,6 +337,7 @@
     const opBadge   = OP_BADGE[prop.operacion]   || 'badge-op-venta';
     const tipoLabel = TIPO_LBL[prop.tipo]        || prop.tipo;
     const wppLink   = generarLinkWhatsApp(prop);
+    const barrio    = barrioLimpio(prop.barrio);
 
     // ── Galería ──────────────────────────────────────────────
     const galeriaHtml = buildGaleria(imagenes, prop.titulo);
@@ -359,10 +374,11 @@
 
           <div class="detalle__precio">${precio}</div>
           <h1 class="detalle__titulo">${prop.titulo}</h1>
-          <div class="detalle__ubicacion">
+          <div class="detalle__ubicacion${barrio ? ' detalle__ubicacion--con-barrio' : ''}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-            ${prop.direccion || '—'}${prop.barrio ? ', ' + prop.barrio : ''}
+            ${prop.direccion || '—'}
           </div>
+          ${barrio ? `<div class="detalle__barrio"><span class="detalle__barrio-label">Barrio:</span> ${barrio}</div>` : ''}
 
           <hr class="detalle__divider">
 

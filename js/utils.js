@@ -156,6 +156,37 @@ function initCounters() {
   counters.forEach(el => observer.observe(el));
 }
 
+/* ── Oficina y ubicación ─────────────────────── */
+
+// Office location (Necochea 1894, Olavarría) — geocoded with Nominatim (house-level match)
+const OFICINA_COORDS    = { lat: -36.8857198, lng: -60.3275031 };
+const OFICINA_DIRECCION = 'Necochea 1894';
+const OFICINA_ENTRE     = 'entre Independencia y San Lorenzo';
+const OFICINA_MAPS_URL  = `https://maps.google.com/?q=${OFICINA_COORDS.lat},${OFICINA_COORDS.lng}`;
+
+// All listings are in this city; cards show it instead of the neighborhood
+const CIUDAD_DEFAULT = 'Olavarría';
+
+/**
+ * Card location text: address + city (never the neighborhood).
+ * Avoids duplicating the city if the address already includes it.
+ */
+function ubicacionCard(prop) {
+  const dir = (prop.direccion || '').trim();
+  if (!dir) return CIUDAD_DEFAULT;
+  const sinTilde = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  if (sinTilde(dir).includes(sinTilde(CIUDAD_DEFAULT))) return dir;
+  return `${dir}, ${CIUDAD_DEFAULT}`;
+}
+
+/**
+ * Neighborhood for the detail page, without a leading "Barrio " prefix.
+ * Returns '' when empty.
+ */
+function barrioLimpio(barrio) {
+  return (barrio || '').trim().replace(/^barrio\s+/i, '').trim();
+}
+
 /* ── WhatsApp ────────────────────────────────── */
 
 // Leonardo Graf — número principal para consultas de propiedades

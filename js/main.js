@@ -148,7 +148,7 @@ function crearCard(prop) {
       </div>
       <div class="propiedad-card__ubicacion">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-        ${prop.direccion || '—'}
+        ${ubicacionCard(prop)}
       </div>
       ${featureItems.length ? `<ul class="propiedad-card__features">${featureItems.join('')}</ul>` : ''}
     </div>
@@ -408,13 +408,13 @@ function initMapaOficina() {
   });
 
   L.marker([OFICINA_LAT, OFICINA_LNG], { icon: iconOficina })
-    .bindPopup('<b>Leonardo Graf Propiedades</b><br>Coronel Suárez 3131, Olavarría')
+    .bindPopup(`<b>Leonardo Graf Propiedades</b><br>${OFICINA_DIRECCION}, ${CIUDAD_DEFAULT}`)
     .addTo(mapa);
 
   // "Ver en mapa" → scroll al mapa de propiedades + abrir popup de la oficina
   document.getElementById('btnVerEnMapa')?.addEventListener('click', () => {
     if (window.innerWidth < 768) {
-      window.open('https://maps.google.com/?q=-36.8973565,-60.3211236', '_blank', 'noopener');
+      window.open(OFICINA_MAPS_URL, '_blank', 'noopener');
     } else {
       document.getElementById('busquedas')?.scrollIntoView({ behavior: 'smooth' });
       setTimeout(() => {
@@ -460,7 +460,7 @@ function crearCardSuenoCumplido(p) {
       </div>
       <div class="sc-card__body">
         <div class="sc-card__tipo">${tipoLabel}</div>
-        <div class="sc-card__dir">${p.direccion || p.titulo}</div>
+        <div class="sc-card__dir">${p.direccion ? ubicacionCard(p) : p.titulo}</div>
         <div class="sc-card__precio">${precioTxt}</div>
       </div>
     </article>`;

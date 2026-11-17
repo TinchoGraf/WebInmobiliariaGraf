@@ -1,9 +1,12 @@
 import json
+import logging
 import os
+import re
 import secrets
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Optional
+from typing import Annotated, Optional
+from urllib.parse import urlparse
 
 import cloudinary
 import cloudinary.uploader
@@ -12,13 +15,15 @@ from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile, st
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 from sqlalchemy.orm import Session
 
 from database import get_db, init_db
 from models import Mensaje, Propiedad
 
 load_dotenv()
+
+logger = logging.getLogger("leonardograf")
 
 cloudinary.config(
     cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
@@ -152,6 +157,10 @@ class EstadoOperacionIn(BaseModel):
     estado_operacion:   str
     precio_venta_final: Optional[float] = None
     moneda_venta_final: Optional[str]   = None
+
+
+class ImagenesOrdenIn(BaseModel):
+    imagenes: list[Annotated[str, StringConstraints(min_length=1, max_length=1000)]] = Field(max_length=100)
 
 
 class MensajeIn(BaseModel):
@@ -343,6 +352,69 @@ def subir_imagenes(
     prop.imagenes = json.dumps(imagenes)
     db.commit()
     db.refresh(prop)
+    return prop
+
+
+def cloudinary_public_id(url: str) -> Optional[str]:
+    """Derive the Cloudinary public_id from a delivery URL, or None if it isn't one.
+
+    https://res.cloudinary.com/<cloud>/image/upload/[...transforms/]v123/folder/name.jpg
+      -> "folder/name"
+    Upload secure_urls always carry the version segment; everything after it is the public_id.
+    """
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https") or parsed.hostname != "res.cloudinary.com":
+        return None
+    parts = parsed.path.split("/upload/", 1)
+    if len(parts) != 2:
+        return None
+    segments = [s for s in parts[1].split("/") if s]
+    version_idx = next((i for i, s in enumerate(segments) if re.fullmatch(r"v\d+", s)), None)
+    if version_idx is not None:
+        segments = segments[version_idx + 1:]
+    if not segments:
+        return None
+    path = "/".join(segments)
+    return path.rsplit(".", 1)[0] if "." in segments[-1] else path
+
+
+@app.put("/propiedades/{prop_id}/imagenes/orden", response_model=PropiedadOut)
+def ordenar_imagenes(
+    prop_id: int,
+    datos: ImagenesOrdenIn,
+    db: Session = Depends(get_db),
+    _: str = Depends(require_auth),
+):
+    """Replace the property's image list with the given ordered list.
+
+    The list may only reorder/remove images the property already has (no foreign URLs).
+    imagenes[0] is the cover photo. Removed Cloudinary images are destroyed (best effort).
+    """
+    prop = get_prop_or_404(prop_id, db)
+    actuales: list[str] = json.loads(prop.imagenes or "[]")
+    nuevas = datos.imagenes
+
+    if len(set(nuevas)) != len(nuevas):
+        raise HTTPException(status_code=422, detail="La lista de imágenes tiene duplicados")
+    desconocidas = [u for u in nuevas if u not in actuales]
+    if desconocidas:
+        raise HTTPException(status_code=422, detail="La lista incluye imágenes que no pertenecen a la propiedad")
+
+    eliminadas = [u for u in actuales if u not in nuevas]
+    prop.imagenes = json.dumps(nuevas)
+    db.commit()
+    db.refresh(prop)
+
+    # Best effort: never fail the request because Cloudinary cleanup failed
+    for url in eliminadas:
+        public_id = cloudinary_public_id(url)
+        if not public_id:
+            continue
+        try:
+            cloudinary.uploader.destroy(public_id, invalidate=True)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("No se pudo borrar %s de Cloudinary: %s", public_id, exc)
+
     return prop
 
 

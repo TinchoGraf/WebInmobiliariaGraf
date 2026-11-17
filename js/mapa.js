@@ -4,8 +4,9 @@ let mapaInstancia      = null;
 let marcadorOficina    = null;
 const marcadoresPorId  = {};   // { [propId]: L.Marker }
 
-const OFICINA_LAT = -36.8973565;
-const OFICINA_LNG = -60.3211236;
+// Office coordinates come from OFICINA_COORDS (js/utils.js)
+const OFICINA_LAT = OFICINA_COORDS.lat;
+const OFICINA_LNG = OFICINA_COORDS.lng;
 
 /* ── Íconos ──────────────────────────────────── */
 
@@ -64,7 +65,7 @@ function _crearPopupHtml(prop) {
       <div class="map-popup__body">
         <span class="propiedad-card__badge ${opClass}" style="position:static;display:inline-block;margin-bottom:6px;font-size:10px">${opLabel}</span>
         <div class="map-popup__precio">${precio}</div>
-        <div class="map-popup__dir">${prop.direccion || ''}</div>
+        <div class="map-popup__dir">${ubicacionCard(prop)}</div>
         <div class="map-popup__actions">
           <a class="map-popup__btn" href="propiedad.html?id=${prop.id}">Ver más</a>
           <a class="map-popup__btn map-popup__btn--wpp"
@@ -96,8 +97,8 @@ function _agregarMarcadorOficina() {
     .bindPopup(`
       <div style="text-align:center;padding:4px 2px;min-width:180px">
         <strong style="font-size:13px;color:#1A1A1A">Leonardo Graf Propiedades</strong><br>
-        <span style="font-size:11px;color:#666;line-height:1.6">Coronel Suárez 3131<br>Olavarría, Buenos Aires</span><br>
-        <a href="https://maps.google.com/?q=-36.8973565,-60.3211236"
+        <span style="font-size:11px;color:#666;line-height:1.6">${OFICINA_DIRECCION}<br>${CIUDAD_DEFAULT}, Buenos Aires</span><br>
+        <a href="${OFICINA_MAPS_URL}"
            target="_blank" rel="noopener noreferrer"
            style="font-size:11px;color:#A00000;font-weight:600;text-decoration:none;margin-top:6px;display:inline-block">
           Ver en Google Maps →
