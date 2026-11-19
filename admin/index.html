@@ -151,12 +151,14 @@
 
     /* ── MODAL ── */
     .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.55); z-index: 500; display: flex; align-items: flex-start; justify-content: center; padding: 1.5rem 1rem; overflow-y: auto; }
-    .modal-box { background: var(--white); border-radius: 14px; width: 100%; max-width: 700px; box-shadow: 0 24px 80px rgba(0,0,0,0.3); margin: auto; }
+    /* Flex column: header, error bar and footer keep their size, only the body scrolls */
+    .modal-box { background: var(--white); border-radius: 14px; width: 100%; max-width: 700px; box-shadow: 0 24px 80px rgba(0,0,0,0.3); margin: auto; display: flex; flex-direction: column; max-height: calc(100vh - 3rem); max-height: calc(100dvh - 3rem); }
+    .modal-box > * { flex-shrink: 0; }
     .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--border); }
     .modal-header h2 { font-size: 1rem; font-weight: 700; }
     .modal-close { width: 32px; height: 32px; border-radius: 6px; border: none; background: transparent; color: var(--muted); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .12s; }
     .modal-close:hover { background: var(--bg); color: var(--text); }
-    .modal-body { padding: 1.5rem; max-height: calc(100vh - 180px); overflow-y: auto; }
+    .modal-box > .modal-body { padding: 1.5rem; flex: 1 1 auto; min-height: 0; overflow-y: auto; }
 
     /* ── FORM ── */
     .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 0.85rem; }
@@ -175,6 +177,17 @@
     .form-check label { font-size: 13px; font-weight: 500; cursor: pointer; }
     .form-divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
     .form-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 0.75rem; }
+
+    /* Save errors live between body and footer (outside the scroll area) so they are always visible */
+    .form-err-bar { margin: 0; border-radius: 0; border-left: 0; border-right: 0; padding: 0.7rem 1.5rem; font-weight: 500; }
+    .form-err-bar__retry { display: block; font-weight: 400; font-size: 12.5px; margin-top: 2px; color: #7f1d1d; }
+
+    /* ── RE-LOGIN (sesión vencida) ── */
+    .relogin-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 700; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .relogin-box { background: var(--white); border-radius: 14px; padding: 1.5rem; width: 100%; max-width: 360px; box-shadow: 0 24px 80px rgba(0,0,0,0.35); }
+    .relogin-box h2 { font-size: 1.05rem; margin-bottom: 0.35rem; }
+    .relogin-box p { font-size: 13px; color: var(--muted); margin-bottom: 1rem; }
+    .relogin-actions { display: flex; gap: 0.6rem; justify-content: flex-end; margin-top: 0.5rem; }
 
     .modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border); background: #fafafa; border-radius: 0 0 14px 14px; flex-wrap: wrap; }
     .modal-footer .btn-secondary { margin-right: auto; }
@@ -403,8 +416,6 @@
     </div>
 
     <div class="modal-body">
-      <div id="formErr" class="error-msg" hidden></div>
-
       <form id="propForm" autocomplete="off" onsubmit="return false">
 
         <div class="form-row">
@@ -600,12 +611,35 @@
       </form>
     </div>
 
+    <div id="formErr" class="error-msg form-err-bar" role="alert" hidden></div>
+
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
       <button id="btnBorrador" class="btn btn-outline" onclick="saveForm(false)">Guardar borrador</button>
       <button id="btnPublicar" class="btn btn-primary" onclick="saveForm(true)">Publicar</button>
     </div>
   </div>
+</div>
+
+<!-- ═══════════ RE-LOGIN (sesión vencida, sin cerrar el formulario) ═══════════ -->
+<div id="reloginModal" class="relogin-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="reloginTitle">
+  <form id="reloginForm" class="relogin-box" autocomplete="on">
+    <h2 id="reloginTitle">Tu sesión venció, volvé a ingresar</h2>
+    <p>Lo que cargaste en el formulario sigue ahí. Después de ingresar se reintenta el guardado.</p>
+    <div id="reloginErr" class="error-msg" hidden></div>
+    <div class="field">
+      <label for="reloginUser">Usuario</label>
+      <input id="reloginUser" type="text" autocomplete="username" required>
+    </div>
+    <div class="field">
+      <label for="reloginPass">Contraseña</label>
+      <input id="reloginPass" type="password" autocomplete="current-password" required>
+    </div>
+    <div class="relogin-actions">
+      <button type="button" class="btn btn-secondary" id="reloginCancel">Cancelar</button>
+      <button type="submit" class="btn btn-primary" id="reloginBtn">Ingresar</button>
+    </div>
+  </form>
 </div>
 
 <!-- Botón flotante WhatsApp -->
@@ -654,6 +688,103 @@ let pendingPolyClick = null;
 /* ─── Helpers ───────────────────────────── */
 function authHdr(extra = {}) {
   return { 'Authorization': `Basic ${creds}`, ...extra };
+}
+
+/* ─── Llamadas a la API con timeout y errores legibles ───
+   Render (plan free) puede tardar ~50 s en despertar: los timeouts dejan margen para eso. */
+const TIMEOUT_JSON_MS  = 60000;
+const TIMEOUT_FOTO_MS  = 120000;
+
+class ApiError extends Error {
+  /** kind: 'auth' | 'timeout' | 'network' | 'http' */
+  constructor(kind, { status = 0, detail = '', paso = '' } = {}) {
+    super(detail || kind);
+    this.kind = kind; this.status = status; this.detail = detail; this.paso = paso;
+  }
+}
+
+async function apiFetch(url, opts = {}, { timeoutMs = TIMEOUT_JSON_MS, paso = '' } = {}) {
+  const ctrl  = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  let r;
+  try {
+    r = await fetch(url, { ...opts, headers: authHdr(opts.headers || {}), signal: ctrl.signal });
+  } catch (err) {
+    const kind = err.name === 'AbortError' ? 'timeout' : 'network';
+    console.error(`[admin] ${paso || url}: ${kind}`, err);
+    throw new ApiError(kind, { paso, detail: err.message });
+  } finally {
+    clearTimeout(timer);
+  }
+  if (r.ok) return r;
+  let detail = `HTTP ${r.status}`;
+  try {
+    const body = await r.json();
+    if (Array.isArray(body.detail)) detail = body.detail.map(d => d.msg).join(', ');
+    else if (typeof body.detail === 'string') detail = body.detail;
+    else if (body.detail) detail = JSON.stringify(body.detail);
+  } catch { /* cuerpo no JSON */ }
+  console.error(`[admin] ${paso || url}: HTTP ${r.status}`, detail);
+  throw new ApiError(r.status === 401 ? 'auth' : 'http', { status: r.status, detail, paso });
+}
+
+/** Human-readable message for a failed save step. */
+function mensajeErrorGuardado(err) {
+  const paso = err.paso || 'guardar la propiedad';
+  if (!(err instanceof ApiError)) return `No se pudo ${paso}: ${err.message}`;
+  if (err.kind === 'timeout') return `No se pudo ${paso}: el servidor tardó demasiado en responder. Revisá la conexión y volvé a intentar.`;
+  if (err.kind === 'network') return `No se pudo ${paso}: no hay conexión con el servidor. Revisá internet y volvé a intentar.`;
+  if (err.kind === 'auth')    return 'Tu sesión venció, volvé a ingresar.';
+  if ((err.status === 404 || err.status === 405) && paso.includes('orden'))
+    return `No se pudo ${paso}: el servidor no tiene esta función (falta actualizar el backend en Render). La propiedad y las fotos quedaron guardadas, pero no el orden.`;
+  return `No se pudo ${paso} (${err.detail || 'HTTP ' + err.status}).`;
+}
+
+/* ─── Re-login sin perder el formulario ─── */
+let reloginPendiente = null;
+
+/** Shows the "session expired" modal. Resolves true once credentials are valid again, false if cancelled. */
+function pedirReLogin() {
+  if (reloginPendiente) return reloginPendiente;
+  const modal = document.getElementById('reloginModal');
+  document.getElementById('reloginErr').hidden = true;
+  document.getElementById('reloginPass').value = '';
+  modal.hidden = false;
+  setTimeout(() => document.getElementById('reloginUser').focus(), 50);
+  reloginPendiente = new Promise(resolve => {
+    const form   = document.getElementById('reloginForm');
+    const cancel = document.getElementById('reloginCancel');
+    const cerrar = (ok) => {
+      modal.hidden = true;
+      form.onsubmit = null; cancel.onclick = null;
+      reloginPendiente = null;
+      resolve(ok);
+    };
+    cancel.onclick = () => cerrar(false);
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById('reloginErr');
+      const btn   = document.getElementById('reloginBtn');
+      const b64   = btoa(`${document.getElementById('reloginUser').value.trim()}:${document.getElementById('reloginPass').value}`);
+      errEl.hidden = true; btn.disabled = true; btn.textContent = 'Verificando…';
+      try {
+        // Read-only authenticated endpoint, just to validate the credentials
+        const r = await fetch(`${API_BASE}/mensajes?no_leidos=true`, { headers: { 'Authorization': `Basic ${b64}` } });
+        if (r.status === 401) { errEl.textContent = 'Usuario o contraseña incorrectos.'; errEl.hidden = false; return; }
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        sessionStorage.setItem('lgraf_auth', b64);
+        creds = b64;
+        cerrar(true);
+      } catch (err) {
+        console.error('[admin] re-login:', err);
+        errEl.textContent = 'No se pudo conectar con el servidor. Probá de nuevo.';
+        errEl.hidden = false;
+      } finally {
+        btn.disabled = false; btn.textContent = 'Ingresar';
+      }
+    };
+  });
+  return reloginPendiente;
 }
 
 function escH(s) {
@@ -1319,7 +1450,7 @@ function addFiles(files) {
 /* ─── Fotos ordenables (SortableJS: mouse + touch) ─── */
 function setFotos(items) {
   // Free object URLs of previews being discarded
-  fotosOrdenadas.forEach(f => { if (f.tipo === 'nueva' && f.preview) URL.revokeObjectURL(f.preview); });
+  fotosOrdenadas.forEach(f => { if (f.preview) URL.revokeObjectURL(f.preview); });
   fotosOrdenadas = items;
   renderFotos();
 }
@@ -1384,7 +1515,7 @@ document.getElementById('fotoGrid').addEventListener('click', (e) => {
   } else if (btn.dataset.accion === 'eliminar') {
     if (foto.tipo === 'existente' &&
         !confirm('¿Eliminar esta foto de la propiedad?\n\nSe borra definitivamente al guardar los cambios.')) return;
-    if (foto.tipo === 'nueva') URL.revokeObjectURL(foto.preview);
+    if (foto.preview) URL.revokeObjectURL(foto.preview);
     fotosOrdenadas.splice(idx, 1);
   }
   renderFotos();
@@ -1395,24 +1526,27 @@ document.getElementById('fotoGrid').addEventListener('click', (e) => {
  * replaces each 'nueva' item with its Cloudinary URL in the SAME position.
  * Returns the final ordered list of URLs.
  */
-async function subirFotosEnOrden(propId) {
-  const urls = [];
+async function subirFotosEnOrden(propId, onProgress) {
+  const urls   = [];
+  const total  = fotosOrdenadas.filter(f => f.tipo === 'nueva').length;
+  let   subida = 0;
   for (let i = 0; i < fotosOrdenadas.length; i++) {
     const f = fotosOrdenadas[i];
     if (f.tipo === 'existente') { urls.push(f.url); continue; }
 
+    subida++;
+    if (onProgress) onProgress(subida, total);
     const fd = new FormData();
     fd.append('archivos', f.file);
-    const r = await fetch(`${API_BASE}/propiedades/${propId}/imagenes`, {
-      method: 'POST', headers: authHdr(), body: fd,
-    });
-    if (r.status === 401) { logout(); throw new Error('Sesión expirada'); }
-    if (!r.ok) throw new Error(`no se pudo subir la foto ${i + 1} (HTTP ${r.status})`);
+    const r = await apiFetch(`${API_BASE}/propiedades/${propId}/imagenes`,
+      { method: 'POST', body: fd },
+      { timeoutMs: TIMEOUT_FOTO_MS, paso: `subir la foto ${i + 1}` });
     const prop = await r.json();
     const url  = prop.imagenes[prop.imagenes.length - 1];  // upload endpoint appends
 
-    URL.revokeObjectURL(f.preview);
-    fotosOrdenadas[i] = { tipo: 'existente', url };  // keep position; a retry won't re-upload
+    // Keep position; a retry won't re-upload it. The preview stays valid in the grid
+    // (revoked later by setFotos), so a re-render keeps showing the image.
+    fotosOrdenadas[i] = { tipo: 'existente', url, preview: f.preview };
     urls.push(url);
   }
   return urls;
@@ -1466,55 +1600,73 @@ async function saveForm(activa) {
     return;
   }
 
-  saveBtn.disabled    = true;
+  if (guardandoForm) return;  // ignore double clicks while a save is running
+  guardandoForm = true;
+  const botones = ['btnPublicar', 'btnBorrador'].map(id => document.getElementById(id));
+  const textos  = botones.map(b => b.textContent);
+  botones.forEach(b => { b.disabled = true; });
   saveBtn.textContent = 'Guardando…';
 
+  let reintentar = false;
   try {
-    const method = editId ? 'PUT'  : 'POST';
-    const url    = editId ? `${API_BASE}/propiedades/${editId}` : `${API_BASE}/propiedades`;
-
-    const r = await fetch(url, {
-      method,
-      headers: authHdr({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify(datos),
-    });
-    if (r.status === 401) { logout(); return; }
-    if (!r.ok) {
-      const detail = await r.json().catch(() => ({ detail: `HTTP ${r.status}` }));
-      throw new Error(Array.isArray(detail.detail)
-        ? detail.detail.map(d => d.msg).join(', ')
-        : (detail.detail || `HTTP ${r.status}`));
-    }
-    const saved = await r.json();
-
-    // From here on the property exists: further saves must edit, not duplicate it
-    editId = saved.id;
-
-    // Photos: upload new ones in order, then persist the full ordered list
-    if (fotosOrdenadas.length || (saved.imagenes || []).length) {
-      saveBtn.textContent = 'Subiendo fotos…';
-      const urls = await subirFotosEnOrden(saved.id);
-      const ro = await fetch(`${API_BASE}/propiedades/${saved.id}/imagenes/orden`, {
-        method: 'PUT',
-        headers: authHdr({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ imagenes: urls }),
-      });
-      if (ro.status === 401) { logout(); return; }
-      if (!ro.ok) {
-        const d = await ro.json().catch(() => ({}));
-        throw new Error(`no se pudo guardar el orden de las fotos (${d.detail || 'HTTP ' + ro.status})`);
-      }
-    }
-
+    await ejecutarGuardado(datos, (txt) => { saveBtn.textContent = txt; });
     closeModal();
-    await loadProps();
+    loadProps();
   } catch (err) {
-    errEl.textContent = `Error: ${err.message}`;
-    errEl.hidden = false;
+    console.error('[admin] Error al guardar la propiedad:', err);
+    if (err instanceof ApiError && err.kind === 'auth') {
+      mostrarErrorForm('Tu sesión venció, volvé a ingresar.', false);
+      reintentar = await pedirReLogin();
+      if (!reintentar) mostrarErrorForm('Tu sesión venció, volvé a ingresar. Tocá el botón de nuevo cuando quieras reintentar; no se perdió nada.', false);
+    } else {
+      mostrarErrorForm(mensajeErrorGuardado(err), true);
+      // The property may already exist server-side (partial save): keep the table in sync
+      if (editId) loadProps();
+    }
   } finally {
-    saveBtn.disabled    = false;
-    saveBtn.textContent = activa ? 'Publicar' : 'Guardar borrador';
+    guardandoForm = false;
+    botones.forEach((b, i) => { b.disabled = false; b.textContent = textos[i]; });
   }
+  if (reintentar) {
+    document.getElementById('formErr').hidden = true;
+    return saveForm(activa);
+  }
+}
+
+let guardandoForm = false;
+
+/**
+ * Runs the save steps in order. Safe to call again after a failure:
+ * - once the property exists, editId is set and the next run edits it (no duplicate);
+ * - photos already uploaded were turned into 'existente' and are not uploaded again.
+ */
+async function ejecutarGuardado(datos, setEstado) {
+  const r = await apiFetch(
+    editId ? `${API_BASE}/propiedades/${editId}` : `${API_BASE}/propiedades`,
+    { method: editId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(datos) },
+    { paso: 'guardar los datos de la propiedad' });
+  const saved = await r.json();
+
+  // From here on the property exists: further saves must edit, not duplicate it
+  editId = saved.id;
+
+  // Photos: upload new ones in order, then persist the full ordered list
+  if (fotosOrdenadas.length || (saved.imagenes || []).length) {
+    const urls = await subirFotosEnOrden(saved.id, (n, total) => setEstado(`Subiendo foto ${n} de ${total}…`));
+    setEstado('Guardando orden…');
+    await apiFetch(`${API_BASE}/propiedades/${saved.id}/imagenes/orden`,
+      { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imagenes: urls }) },
+      { paso: 'guardar el orden de las fotos' });
+  }
+  return saved;
+}
+
+function mostrarErrorForm(msg, conReintento) {
+  const errEl = document.getElementById('formErr');
+  errEl.innerHTML = escH(msg) + (conReintento
+    ? '<span class="form-err-bar__retry">Lo que cargaste sigue acá. Podés volver a tocar el botón para reintentar: no se duplica la propiedad ni se vuelven a subir las fotos ya subidas.</span>'
+    : '');
+  errEl.hidden = false;
 }
 
 /* ═══════════════════════════════════════════
