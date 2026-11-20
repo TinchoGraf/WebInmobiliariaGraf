@@ -15,7 +15,8 @@ from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile, st
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, computed_field, field_validator
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from database import get_db, init_db
@@ -62,6 +63,7 @@ app.add_middleware(
 )
 
 security = HTTPBasic()
+security_opcional = HTTPBasic(auto_error=False)
 
 app.mount("/assets", StaticFiles(directory=str(IMAGES_DIR.parent)), name="assets")
 
@@ -80,17 +82,81 @@ def require_auth(credentials: HTTPBasicCredentials = Depends(security)) -> str:
     return credentials.username
 
 
+def credenciales_validas(credentials: Optional[HTTPBasicCredentials]) -> bool:
+    if credentials is None:
+        return False
+    ok_user = secrets.compare_digest(credentials.username.encode(), ADMIN_USER.encode())
+    ok_pass = secrets.compare_digest(credentials.password.encode(), ADMIN_PASSWORD.encode())
+    return ok_user and ok_pass
+
+
+def auth_opcional(credentials: Optional[HTTPBasicCredentials] = Depends(security_opcional)) -> bool:
+    """True if valid admin credentials were sent. Public endpoints use it to show drafts only to the admin."""
+    return credenciales_validas(credentials)
+
+
+# ── Borradores ───────────────────────────────────────────────────────────────
+
+ESTADO_BORRADOR = "borrador"
+
+# Same required fields the admin form asks for when publishing (label shown to the user)
+CAMPOS_OBLIGATORIOS = {
+    "titulo":    "título",
+    "operacion": "operación",
+    "tipo":      "tipo",
+    "precio":    "precio",
+    "direccion": "dirección",
+}
+
+
+def _getter(obj):
+    return obj.get if isinstance(obj, dict) else (lambda k: getattr(obj, k, None))
+
+
+def calcular_campos_faltantes(obj) -> list[str]:
+    """Required fields still empty, as user-facing labels. Works with ORM objects, schemas or dicts."""
+    get = _getter(obj)
+    faltan = []
+    for campo, etiqueta in CAMPOS_OBLIGATORIOS.items():
+        v = get(campo)
+        if v is None or (isinstance(v, str) and not v.strip()) or (campo == "precio" and v <= 0):
+            faltan.append(etiqueta)
+    if get("estado_operacion") in ("vendida", "alquilada") and get("precio_venta_final") is None:
+        faltan.append("precio final")
+    return faltan
+
+
+def validar_publicable(obj) -> None:
+    """Drafts may be incomplete; any other state must have every required field (422 otherwise)."""
+    if (_getter(obj)("estado_operacion") or "activa") == ESTADO_BORRADOR:
+        return
+    faltan = calcular_campos_faltantes(obj)
+    if faltan:
+        raise HTTPException(
+            status_code=422,
+            detail={"mensaje": f"Faltan campos obligatorios: {', '.join(faltan)}", "campos_faltantes": faltan},
+        )
+
+
+def filtrar_borradores(q, incluir: bool):
+    if incluir:
+        return q
+    # NULL-safe: rows without estado_operacion are not drafts
+    return q.filter(or_(Propiedad.estado_operacion.is_(None), Propiedad.estado_operacion != ESTADO_BORRADOR))
+
+
 # ── Schemas ──────────────────────────────────────────────────────────────────
 
 class PropiedadIn(BaseModel):
-    titulo:        str
+    # Optional so drafts can be saved incomplete; validar_publicable() enforces them otherwise
+    titulo:        Optional[str]   = None
     descripcion:   Optional[str]   = None
-    operacion:     str
-    tipo:          str
+    operacion:     Optional[str]   = None
+    tipo:          Optional[str]   = None
     antiguedad:    Optional[str]   = None
-    precio:        float
+    precio:        Optional[float] = None
     moneda:        str             = "USD"
-    direccion:     str
+    direccion:     Optional[str]   = None
     barrio:        Optional[str]   = None
     lat:           Optional[float] = None
     lng:           Optional[float] = None
@@ -111,14 +177,14 @@ class PropiedadOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id:             int
-    titulo:         str
+    titulo:         Optional[str]
     descripcion:    Optional[str]
-    operacion:      str
-    tipo:           str
+    operacion:      Optional[str]
+    tipo:           Optional[str]
     antiguedad:     Optional[str]
-    precio:         float
-    moneda:         str
-    direccion:      str
+    precio:         Optional[float]
+    moneda:         Optional[str]
+    direccion:      Optional[str]
     barrio:         Optional[str]
     lat:            Optional[float]
     lng:            Optional[float]
@@ -134,9 +200,15 @@ class PropiedadOut(BaseModel):
     estado_propiedad:       Optional[str]
     cantidad_pisos:         Optional[int]
     destacada:               bool
-    estado_operacion:        str
+    estado_operacion:        Optional[str]
     precio_venta_final:      Optional[float]
     moneda_venta_final:      Optional[str]
+
+    @computed_field
+    @property
+    def campos_faltantes(self) -> list[str]:
+        """Required fields still incomplete (for drafts: what's missing before publishing)."""
+        return calcular_campos_faltantes(self)
 
     @field_validator("imagenes", mode="before")
     @classmethod
@@ -191,9 +263,9 @@ class MensajeOut(BaseModel):
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
-def get_prop_or_404(prop_id: int, db: Session) -> Propiedad:
+def get_prop_or_404(prop_id: int, db: Session, incluir_borrador: bool = True) -> Propiedad:
     prop = db.query(Propiedad).filter(Propiedad.id == prop_id).first()
-    if not prop:
+    if not prop or (not incluir_borrador and prop.estado_operacion == ESTADO_BORRADOR):
         raise HTTPException(status_code=404, detail="Propiedad no encontrada")
     return prop
 
@@ -220,12 +292,21 @@ def listar_propiedades(
     precio_min:       Optional[float] = Query(None),
     precio_max:       Optional[float] = Query(None),
     moneda:           Optional[str]   = Query(None),
-    todas:            bool            = Query(False, description="Si True incluye propiedades en cualquier estado de operación"),
-    estado_operacion: Optional[str]   = Query(None, description="Filtra por estado de operación (activa | pausada | alquilada | vendida)"),
+    todas:            bool            = Query(False, description="Si True incluye propiedades en cualquier estado de operación (salvo borradores)"),
+    estado_operacion: Optional[str]   = Query(None, description="Filtra por estado de operación (activa | pausada | alquilada | vendida | borrador*)"),
     seccion:          Optional[str]   = Query(None, description="'suenos_cumplidos' devuelve solo vendidas/alquiladas con precio_venta_final cargado"),
+    incluir_borradores: bool          = Query(False, description="*Incluye borradores. Solo con autenticación (admin)"),
     db: Session = Depends(get_db),
+    es_admin: bool = Depends(auth_opcional),
 ):
-    q = db.query(Propiedad)
+    if incluir_borradores and not es_admin:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="incluir_borradores requiere autenticación",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    # Drafts never reach the public site, whatever the other filters say
+    q = filtrar_borradores(db.query(Propiedad), incluir_borradores)
 
     if seccion == "suenos_cumplidos":
         q = q.filter(Propiedad.estado_operacion.in_(["vendida", "alquilada"]))
@@ -248,8 +329,9 @@ def listar_propiedades(
 
 
 @app.get("/propiedades/{prop_id}", response_model=PropiedadOut)
-def obtener_propiedad(prop_id: int, db: Session = Depends(get_db)):
-    return get_prop_or_404(prop_id, db)
+def obtener_propiedad(prop_id: int, db: Session = Depends(get_db), es_admin: bool = Depends(auth_opcional)):
+    # Drafts are never public: 404 unless the request carries valid admin credentials
+    return get_prop_or_404(prop_id, db, incluir_borrador=es_admin)
 
 
 @app.post("/propiedades", response_model=PropiedadOut, status_code=201)
@@ -258,6 +340,7 @@ def crear_propiedad(
     db: Session = Depends(get_db),
     _: str = Depends(require_auth),
 ):
+    validar_publicable(datos.model_dump())
     prop = Propiedad(**datos.model_dump(), imagenes="[]")
     db.add(prop)
     db.commit()
@@ -273,6 +356,7 @@ def editar_propiedad(
     _: str = Depends(require_auth),
 ):
     prop = get_prop_or_404(prop_id, db)
+    validar_publicable(datos.model_dump())  # e.g. borrador -> activa needs every required field
     for field, value in datos.model_dump().items():
         setattr(prop, field, value)
     db.commit()
@@ -319,6 +403,11 @@ def actualizar_estado_operacion(
         prop.precio_venta_final = datos.precio_venta_final
     if datos.moneda_venta_final is not None:
         prop.moneda_venta_final = datos.moneda_venta_final
+    try:
+        validar_publicable(prop)  # leaving "borrador" requires a complete property
+    except HTTPException:
+        db.rollback()
+        raise
     db.commit()
     db.refresh(prop)
     return prop

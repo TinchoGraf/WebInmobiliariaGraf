@@ -7,14 +7,14 @@ class Propiedad(Base):
     __tablename__ = "propiedades"
 
     id             = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    titulo         = Column(String(200), nullable=False)
+    titulo         = Column(String(200), nullable=True)    # obligatorio salvo en borradores (se valida en la API)
     descripcion    = Column(Text, nullable=True)
-    operacion      = Column(String(20), nullable=False)   # venta | alquiler | alquiler_temp
-    tipo           = Column(String(30), nullable=False)    # casa | departamento | lote | comercial | chacra_campo | quinta
+    operacion      = Column(String(20), nullable=True)    # venta | alquiler | alquiler_temp
+    tipo           = Column(String(30), nullable=True)     # casa | departamento | lote | comercial | chacra_campo | quinta
     antiguedad     = Column(String(20), nullable=True)     # a_estrenar | 1_10 | 10_20 | mas_20
-    precio         = Column(Float, nullable=False)
+    precio         = Column(Float, nullable=True)
     moneda         = Column(String(3), default="USD")
-    direccion      = Column(String(300), nullable=False)
+    direccion      = Column(String(300), nullable=True)
     barrio         = Column(String(100), nullable=True)
     lat            = Column(Float, nullable=True)
     lng            = Column(Float, nullable=True)
@@ -30,7 +30,7 @@ class Propiedad(Base):
     estado_propiedad       = Column(String(30), nullable=True) # nueva | usado_buen_estado | usado_regular | usado_a_refaccionar | a_reciclar | a_demoler
     cantidad_pisos          = Column(Integer, nullable=True)   # cantidad de pisos de la construcción
     destacada               = Column(Boolean, default=False)
-    estado_operacion        = Column(String(20), default="activa")  # activa | pausada | alquilada | vendida
+    estado_operacion        = Column(String(20), default="activa")  # activa | pausada | alquilada | vendida | borrador (incompleta, nunca pública)
     precio_venta_final      = Column(Float, nullable=True)     # precio al que se vendió/alquiló
     moneda_venta_final      = Column(String(3), nullable=True) # USD | ARS — moneda de precio_venta_final
 

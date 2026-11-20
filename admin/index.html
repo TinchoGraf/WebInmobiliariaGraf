@@ -120,6 +120,25 @@
     .estado-op-pausada   { background: #e5e7eb; color: #374151; }
     .estado-op-alquilada { background: #dbeafe; color: #1e40af; }
     .estado-op-vendida   { background: #fee2e2; color: #991b1b; }
+    .estado-op-borrador  { background: #f1f5f9; color: #475569; border-color: #EAB308; }
+
+    /* borradores (pendiente de finalizar) */
+    .ico-warn { flex-shrink: 0; vertical-align: -2px; }
+    .pendiente-badge { display: inline-flex; align-items: center; gap: 5px; margin-top: 4px; font-size: 11.5px; font-weight: 700; color: #854d0e; background: #fef9c3; border: 1px solid #EAB308; border-radius: 999px; padding: 1px 8px 1px 6px; }
+    .td-faltan { font-size: 11.5px; color: #92400e; margin-top: 3px; white-space: normal; max-width: 260px; }
+    .row-borrador td { background: #fffdf2; }
+    .btn-continuar { border-color: #ca8a04; color: #854d0e; background: #fef9c3; }
+    .btn-continuar:hover { background: #fef08a; }
+    .filtro-pendientes { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; cursor: pointer; }
+    .filtro-pendientes input { width: 16px; height: 16px; accent-color: #ca8a04; }
+    .tab-pendientes { color: #a16207; font-weight: 600; }
+    /* The "(N pendientes)" counter made the tabs wider than a 375px phone */
+    .tabs-nav { flex-wrap: wrap; }
+    .tab-btn { white-space: nowrap; }
+    @media (max-width: 560px) {
+      .tab-btn { padding: 0.6rem 0.6rem; font-size: 13px; gap: 0.3rem; }
+      .tab-pendientes { font-size: 12px; }
+    }
 
     .btn-action { padding: 0.3rem 0.65rem; border-radius: 5px; font-size: 12px; font-weight: 500; border: 1.5px solid; cursor: pointer; transition: background .12s; margin-left: 4px; }
     .btn-edit { border-color: var(--accent); color: var(--accent); background: transparent; }
@@ -180,6 +199,12 @@
 
     /* Save errors live between body and footer (outside the scroll area) so they are always visible */
     .form-err-bar { margin: 0; border-radius: 0; border-left: 0; border-right: 0; padding: 0.7rem 1.5rem; font-weight: 500; }
+    .form-group .field-missing, .form-group .field-missing:focus { border-color: var(--danger); background: #fef2f2; }
+    .autosave-banner { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; background: #fef9c3; border: 1px solid #EAB308; color: #713f12; border-radius: var(--radius); padding: 0.65rem 0.85rem; margin-bottom: 1rem; font-size: 13px; font-weight: 500; }
+    .autosave-banner span { flex: 1 1 200px; }
+    .autosave-status { font-size: 12px; color: var(--muted); margin-right: auto; }
+    .modal-footer .autosave-status:empty { display: none; }
+    .toast { position: fixed; left: 1rem; bottom: 1.5rem; z-index: 800; max-width: calc(100vw - 2rem); background: #1a202c; color: #fff; padding: 0.75rem 1rem; border-radius: var(--radius); font-size: 13.5px; font-weight: 500; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     .form-err-bar__retry { display: block; font-weight: 400; font-size: 12.5px; margin-top: 2px; color: #7f1d1d; }
 
     /* ── RE-LOGIN (sesión vencida) ── */
@@ -273,7 +298,7 @@
 
     <!-- Tabs -->
     <nav class="tabs-nav">
-      <button class="tab-btn tab-active" onclick="switchTab('propiedades')">Propiedades</button>
+      <button class="tab-btn tab-active" onclick="switchTab('propiedades')">Propiedades<span id="tabPendientes" class="tab-pendientes"></span></button>
       <button class="tab-btn" onclick="switchTab('buscarCliente')">Buscar para cliente</button>
       <button class="tab-btn" onclick="switchTab('mensajes')">
         Mensajes recibidos
@@ -285,6 +310,7 @@
     <div id="tabPropiedades">
       <div class="toolbar">
         <input id="searchInput" type="search" class="search-input" placeholder="Buscar por dirección, título o barrio…" autocomplete="off">
+        <label class="filtro-pendientes"><input type="checkbox" id="chkSoloPendientes"> Solo pendientes</label>
         <button class="btn btn-primary" onclick="openCreate()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Nueva propiedad
@@ -416,6 +442,12 @@
     </div>
 
     <div class="modal-body">
+      <div id="autosaveBanner" class="autosave-banner" role="status" hidden>
+        <span id="autosaveBannerTxt"></span>
+        <button type="button" class="btn btn-primary" onclick="retomarAutosave()">Retomar</button>
+        <button type="button" class="btn btn-secondary" onclick="descartarAutosave()">Descartar</button>
+      </div>
+
       <form id="propForm" autocomplete="off" onsubmit="return false">
 
         <div class="form-row">
@@ -535,6 +567,7 @@
               <option value="pausada">Pausada</option>
               <option value="alquilada">Alquilada</option>
               <option value="vendida">Vendida</option>
+              <option value="borrador">⚠ Borrador (pendiente)</option>
             </select>
           </div>
         </div>
@@ -575,7 +608,7 @@
             <div id="mapPoligono"></div>
             <div class="poly-toolbar">
               <span id="polyStatus" class="poly-status"></span>
-              <button type="button" class="btn btn-secondary" onclick="limpiarPoligono()">Limpiar polígono</button>
+              <button type="button" class="btn btn-secondary" onclick="limpiarPoligono(); marcarCambio()">Limpiar polígono</button>
             </div>
             <input type="hidden" id="fieldPoligonoZona" name="poligono_zona">
           </div>
@@ -615,8 +648,9 @@
 
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
-      <button id="btnBorrador" class="btn btn-outline" onclick="saveForm(false)">Guardar borrador</button>
-      <button id="btnPublicar" class="btn btn-primary" onclick="saveForm(true)">Publicar</button>
+      <span id="autosaveStatus" class="autosave-status" aria-live="polite"></span>
+      <button id="btnBorrador" class="btn btn-outline" onclick="saveForm('borrador')">Guardar y terminar después</button>
+      <button id="btnPublicar" class="btn btn-primary" onclick="saveForm('publicar')">Publicar</button>
     </div>
   </div>
 </div>
@@ -641,6 +675,8 @@
     </div>
   </form>
 </div>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
 <!-- Botón flotante WhatsApp -->
 <a href="https://wa.me/5492284224338?text=Hola%2C%20quiero%20consultar%20por%20una%20propiedad"
@@ -697,9 +733,9 @@ const TIMEOUT_FOTO_MS  = 120000;
 
 class ApiError extends Error {
   /** kind: 'auth' | 'timeout' | 'network' | 'http' */
-  constructor(kind, { status = 0, detail = '', paso = '' } = {}) {
+  constructor(kind, { status = 0, detail = '', paso = '', body = null } = {}) {
     super(detail || kind);
-    this.kind = kind; this.status = status; this.detail = detail; this.paso = paso;
+    this.kind = kind; this.status = status; this.detail = detail; this.paso = paso; this.body = body;
   }
 }
 
@@ -718,14 +754,16 @@ async function apiFetch(url, opts = {}, { timeoutMs = TIMEOUT_JSON_MS, paso = ''
   }
   if (r.ok) return r;
   let detail = `HTTP ${r.status}`;
+  let body = null;
   try {
-    const body = await r.json();
+    body = await r.json();
     if (Array.isArray(body.detail)) detail = body.detail.map(d => d.msg).join(', ');
     else if (typeof body.detail === 'string') detail = body.detail;
+    else if (body.detail?.mensaje) detail = body.detail.mensaje;
     else if (body.detail) detail = JSON.stringify(body.detail);
   } catch { /* cuerpo no JSON */ }
   console.error(`[admin] ${paso || url}: HTTP ${r.status}`, detail);
-  throw new ApiError(r.status === 401 ? 'auth' : 'http', { status: r.status, detail, paso });
+  throw new ApiError(r.status === 401 ? 'auth' : 'http', { status: r.status, detail, paso, body });
 }
 
 /** Human-readable message for a failed save step. */
@@ -836,10 +874,9 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   const b64 = btoa(`${u}:${p}`);
 
   try {
-    const r = await fetch(`${API_BASE}/propiedades`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Basic ${b64}` },
-      body:    '{}',
+    // Read-only authenticated endpoint: validates credentials without writing anything
+    const r = await fetch(`${API_BASE}/mensajes?no_leidos=true`, {
+      headers: { 'Authorization': `Basic ${b64}` },
     });
     if (r.status === 401) {
       errEl.textContent = 'Usuario o contraseña incorrectos.';
@@ -892,11 +929,18 @@ async function loadProps() {
   const wrap = document.getElementById('tableWrap');
   wrap.innerHTML = '<p class="admin-state">Cargando propiedades…</p>';
   try {
-    const r = await fetch(`${API_BASE}/propiedades?todas=true`, { headers: authHdr() });
-    if (r.status === 401) { logout(); return; }
+    const r = await fetch(`${API_BASE}/propiedades?todas=true&incluir_borradores=true`, { headers: authHdr() });
+    if (r.status === 401) {
+      // With the form open, never drop to the login screen: re-login on top and retry
+      if (!document.getElementById('formModal').hidden) { if (await pedirReLogin()) loadProps(); return; }
+      logout(); return;
+    }
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     propiedades = await r.json();
-    renderTable(propiedades);
+    const pendientes = propiedades.filter(esBorrador).length;
+    document.getElementById('tabPendientes').textContent =
+      pendientes ? ` (${pendientes} pendiente${pendientes === 1 ? '' : 's'})` : '';
+    refrescarTabla();
   } catch (err) {
     wrap.innerHTML = `<p class="admin-state" style="color:var(--danger)">
       Error al cargar: ${escH(err.message)}.
@@ -906,16 +950,22 @@ async function loadProps() {
 }
 
 /* ─── Búsqueda ───────────────────────────── */
-document.getElementById('searchInput').addEventListener('input', function () {
-  const q = this.value.toLowerCase().trim();
-  renderTable(q
+function esBorrador(p) { return p.estado_operacion === 'borrador'; }
+
+function refrescarTabla() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  let list = q
     ? propiedades.filter(p =>
         (p.direccion || '').toLowerCase().includes(q) ||
         (p.titulo    || '').toLowerCase().includes(q) ||
         (p.barrio    || '').toLowerCase().includes(q))
-    : propiedades
-  );
-});
+    : propiedades;
+  if (document.getElementById('chkSoloPendientes').checked) list = list.filter(esBorrador);
+  renderTable(list);
+}
+
+document.getElementById('searchInput').addEventListener('input', refrescarTabla);
+document.getElementById('chkSoloPendientes').addEventListener('change', refrescarTabla);
 
 /* ─── Render tabla propiedades ───────────── */
 const OP_LABELS = { venta: 'Venta', alquiler: 'Alquiler', alquiler_temp: 'Alq. temporal' };
@@ -945,22 +995,33 @@ function thumbHtml(p) {
   return `<img class="thumb" src="${escH(p.imagenes[0])}" alt="" loading="lazy">`;
 }
 
+const TRIANGULO_SVG = '<svg class="ico-warn" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 1.5 21h21L12 2.5z" fill="#EAB308" stroke="#a16207" stroke-width="1" stroke-linejoin="round"/><path d="M12 9.5v5" stroke="#1a202c" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="17.6" r="1.3" fill="#1a202c"/></svg>';
+
 function renderTable(list) {
   const wrap = document.getElementById('tableWrap');
   if (!list.length) {
-    wrap.innerHTML = '<p class="admin-state">No hay propiedades para mostrar.</p>';
+    wrap.innerHTML = document.getElementById('chkSoloPendientes').checked
+      ? '<p class="admin-state">No hay cargas pendientes de finalizar.</p>'
+      : '<p class="admin-state">No hay propiedades para mostrar.</p>';
     return;
   }
-  const rows = list.map(p => `
-    <tr class="${p.estado_operacion === 'pausada' ? 'row-paused' : ''}">
+  // Drafts first (stable sort keeps the server order: destacadas, then newest)
+  list = [...list].sort((a, b) => esBorrador(b) - esBorrador(a));
+  const rows = list.map(p => {
+    const borrador = esBorrador(p);
+    const faltan   = p.campos_faltantes || [];
+    return `
+    <tr class="${p.estado_operacion === 'pausada' ? 'row-paused' : ''}${borrador ? ' row-borrador' : ''}">
       <td>${thumbHtml(p)}</td>
       <td>
-        <div class="td-titulo">${escH(p.titulo)}</div>
+        <div class="td-titulo">${escH(p.titulo || (borrador ? 'Sin título' : ''))}</div>
         <div class="td-sub">${escH(p.direccion || '')}${p.barrio ? ` · ${escH(p.barrio)}` : ''}</div>
-        <div class="td-tipo">${TIPO_LBL[p.tipo] || escH(p.tipo)}</div>
+        <div class="td-tipo">${p.tipo ? (TIPO_LBL[p.tipo] || escH(p.tipo)) : ''}</div>
+        ${borrador ? `<div class="pendiente-badge" title="${escH(faltan.length ? 'Falta: ' + faltan.join(', ') : 'Listo para publicar')}">${TRIANGULO_SVG} Pendiente de finalizar</div>
+        <div class="td-faltan">${faltan.length ? `Falta: ${escH(faltan.join(', '))}` : 'Completo: abrilo y tocá «Publicar»'}</div>` : ''}
       </td>
-      <td><span class="op-badge ${OP_CSS[p.operacion] || ''}">${OP_LABELS[p.operacion] || escH(p.operacion)}</span></td>
-      <td class="td-precio">${fmtPrecio(p.precio, p.moneda)}</td>
+      <td>${p.operacion ? `<span class="op-badge ${OP_CSS[p.operacion] || ''}">${OP_LABELS[p.operacion] || escH(p.operacion)}</span>` : '—'}</td>
+      <td class="td-precio">${p.precio != null ? fmtPrecio(p.precio, p.moneda || 'USD') : '—'}</td>
       <td style="text-align:center">
         <button class="btn-star ${p.destacada ? 'btn-star--active' : ''}"
                 onclick="doToggleDestacada(${p.id}, this)"
@@ -973,13 +1034,17 @@ function renderTable(list) {
           <option value="pausada"   ${p.estado_operacion === 'pausada'   ? 'selected' : ''}>Pausada</option>
           <option value="alquilada" ${p.estado_operacion === 'alquilada' ? 'selected' : ''}>Alquilada</option>
           <option value="vendida"   ${p.estado_operacion === 'vendida'   ? 'selected' : ''}>Vendida</option>
+          <option value="borrador"  ${borrador ? 'selected' : ''}>⚠ Borrador</option>
         </select>
       </td>
       <td style="text-align:right">
-        <button class="btn-action btn-edit" onclick="openEdit(${p.id})">Editar</button>
-        <button class="btn-action btn-del"  onclick="doDel(${p.id}, '${escAttr(p.titulo)}')">Eliminar</button>
+        ${borrador
+          ? `<button class="btn-action btn-continuar" onclick="openEdit(${p.id})">Continuar carga</button>`
+          : `<button class="btn-action btn-edit" onclick="openEdit(${p.id})">Editar</button>`}
+        <button class="btn-action btn-del"  onclick="doDel(${p.id}, '${escAttr(p.titulo || 'Sin título')}')">Eliminar</button>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 
   wrap.innerHTML = `
     <div class="table-wrap">
@@ -1036,12 +1101,18 @@ async function doChangeEstadoOperacion(id, sel) {
       body: JSON.stringify(payload),
     });
     if (r.status === 401) { logout(); return; }
-    if (!r.ok) throw new Error();
+    if (!r.ok) {
+      const body   = await r.json().catch(() => ({}));
+      const faltan = body?.detail?.campos_faltantes;
+      throw new Error(faltan
+        ? `No se puede publicar todavía: falta ${faltan.join(', ')}.\n\nUsá «Continuar carga» para completarla.`
+        : 'Error al cambiar el estado. Intentá de nuevo.');
+    }
     await loadProps();
-  } catch {
+  } catch (err) {
     sel.value = anterior;
     sel.disabled = false;
-    alert('Error al cambiar el estado. Intentá de nuevo.');
+    alert(err.message || 'Error al cambiar el estado. Intentá de nuevo.');
   }
 }
 
@@ -1157,7 +1228,9 @@ async function marcarLeido(id, btn) {
    MODAL FORM
 ═══════════════════════════════════════════ */
 function openCreate() {
+  cargandoForm = true;
   editId    = null;
+  estadoServidorForm = null;
   setFotos([]);
   lastGeocodedDireccion = '';
   document.getElementById('formTitle').textContent      = 'Nueva propiedad';
@@ -1174,13 +1247,17 @@ function openCreate() {
   limpiarPoligono();
   if (pickerMarker && mapaPicker) { mapaPicker.removeLayer(pickerMarker); pickerMarker = null; }
   openModal();
+  prepararAutosave();
+  cargandoForm = false;
 }
 
 function openEdit(id) {
   const p = propiedades.find(x => x.id === id);
   if (!p) return;
+  cargandoForm = true;
   editId    = id;
-  document.getElementById('formTitle').textContent = 'Editar propiedad';
+  estadoServidorForm = p.estado_operacion;
+  document.getElementById('formTitle').textContent = esBorrador(p) ? 'Continuar carga (borrador)' : 'Editar propiedad';
   document.getElementById('formErr').hidden        = true;
 
   const fm = document.getElementById('propForm');
@@ -1212,7 +1289,9 @@ function openEdit(id) {
   setFotos((p.imagenes || []).map(url => ({ tipo: 'existente', url })));
 
   openModal();
-  if (p.lat && p.lng) setTimeout(() => setMarker(p.lat, p.lng, false), 350);
+  prepararAutosave();
+  cargandoForm = false;
+  if (p.lat && p.lng) setTimeout(() => setMarker(p.lat, p.lng, false, true), 350);
   if (showPoly) {
     setTimeout(() => {
       if (!mapPoligono) initMapPoligono();
@@ -1224,12 +1303,17 @@ function openEdit(id) {
 
 function openModal() {
   document.getElementById('formModal').hidden = false;
+  document.querySelector('#formModal .modal-body').scrollTop = 0;
   document.body.style.overflow = 'hidden';
   if (!mapaPicker) setTimeout(initMapPicker, 80);
   else             setTimeout(() => mapaPicker.invalidateSize(), 100);
 }
 
 function closeModal() {
+  // Keep a local copy of unsaved edits (Cancelar / click outside) so they can be resumed later
+  if (cambiosVersion > versionGuardadaLocal) guardarLocal();
+  clearTimeout(autosaveTimer);
+  clearInterval(autosaveServidorTimer);
   document.getElementById('formModal').hidden = true;
   document.body.style.overflow = '';
 }
@@ -1277,7 +1361,7 @@ function initMapPicker() {
   setTimeout(() => mapaPicker.invalidateSize(), 250);
 }
 
-function setMarker(lat, lng, pan) {
+function setMarker(lat, lng, pan, silencioso = false) {
   if (!mapaPicker) return;
   if (pickerMarker) mapaPicker.removeLayer(pickerMarker);
   pickerMarker = L.marker([lat, lng], { icon: PICKER_ICON() }).addTo(mapaPicker);
@@ -1285,6 +1369,7 @@ function setMarker(lat, lng, pan) {
   document.getElementById('fieldLng').value = lng.toFixed(6);
   updateCoordsLabel(lat, lng);
   if (pan) mapaPicker.setView([lat, lng], Math.max(mapaPicker.getZoom(), 15));
+  if (!silencioso) marcarCambio();
 }
 
 function updateCoordsLabel(lat, lng) {
@@ -1356,6 +1441,7 @@ function addPolyPoint(lat, lng) {
   polyMarkers.push(m);
   drawPolyPreview();
   updatePoligonoField();
+  marcarCambio();
   document.getElementById('polyStatus').textContent =
     polyPoints.length < 3
       ? `${polyPoints.length} punto(s) — necesitás 3 o más para cerrar el polígono.`
@@ -1376,6 +1462,7 @@ function closePoligono() {
     color: '#A00000', fillColor: '#A00000', fillOpacity: 0.15, weight: 2,
   }).addTo(mapPoligono);
   updatePoligonoField();
+  marcarCambio();
   document.getElementById('polyStatus').textContent =
     `Polígono cerrado con ${polyPoints.length} puntos.`;
 }
@@ -1441,10 +1528,15 @@ fileInput.addEventListener('change', () => { addFiles(fileInput.files); fileInpu
 function addFiles(files) {
   const nuevas = Array.from(files)
     .filter(f => f.type.startsWith('image/'))
-    .map(file => ({ tipo: 'nueva', file, preview: URL.createObjectURL(file) }));
+    .map(file => ({ tipo: 'nueva', id: nuevoIdFoto(), file, preview: URL.createObjectURL(file) }));
   if (!nuevas.length) return;
   fotosOrdenadas.push(...nuevas);
   renderFotos();
+  guardarLocal();  // store the photo blobs right away (IndexedDB), not after the debounce
+}
+
+function nuevoIdFoto() {
+  return (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
 }
 
 /* ─── Fotos ordenables (SortableJS: mouse + touch) ─── */
@@ -1452,14 +1544,15 @@ function setFotos(items) {
   // Free object URLs of previews being discarded
   fotosOrdenadas.forEach(f => { if (f.preview) URL.revokeObjectURL(f.preview); });
   fotosOrdenadas = items;
-  renderFotos();
+  renderFotos({ silencioso: true });
 }
 
 function fotoSrc(f) {
   return f.tipo === 'nueva' ? f.preview : f.url;
 }
 
-function renderFotos() {
+function renderFotos({ silencioso = false } = {}) {
+  if (!silencioso) marcarCambio();
   const grid = document.getElementById('fotoGrid');
   document.getElementById('fotosHint').hidden = fotosOrdenadas.length < 2;
 
@@ -1489,7 +1582,9 @@ function renderFotos() {
       dragClass: 'foto-drag',
       forceFallback: true,             // same custom drag preview on desktop and touch
       fallbackOnBody: true,
+      onStart: () => { arrastrandoFoto = true; },
       onEnd: (evt) => {
+        arrastrandoFoto = false;
         if (evt.oldIndex === evt.newIndex) return;
         // Insert at the drop position (others shift), not a swap
         const [movida] = fotosOrdenadas.splice(evt.oldIndex, 1);
@@ -1522,82 +1617,121 @@ document.getElementById('fotoGrid').addEventListener('click', (e) => {
 });
 
 /**
- * Uploads new photos one at a time (sequential → no ordering races) and
- * replaces each 'nueva' item with its Cloudinary URL in the SAME position.
- * Returns the final ordered list of URLs.
+ * Uploads new photos one at a time (sequential → no ordering races) and turns each
+ * uploaded 'nueva' item into 'existente' IN PLACE (found by identity, so a reorder made
+ * while uploading never swaps the wrong photo). A retry won't re-upload them.
+ * Returns the final ordered list of URLs = the photos currently in the grid that are on
+ * the server, in the grid's current order (photos removed meanwhile are left out, so the
+ * order endpoint deletes them; photos added meanwhile go up on the next save).
  */
 async function subirFotosEnOrden(propId, onProgress) {
-  const urls   = [];
-  const total  = fotosOrdenadas.filter(f => f.tipo === 'nueva').length;
-  let   subida = 0;
-  for (let i = 0; i < fotosOrdenadas.length; i++) {
-    const f = fotosOrdenadas[i];
-    if (f.tipo === 'existente') { urls.push(f.url); continue; }
-
-    subida++;
-    if (onProgress) onProgress(subida, total);
+  const pendientes = fotosOrdenadas.filter(f => f.tipo === 'nueva');
+  for (let n = 0; n < pendientes.length; n++) {
+    const f = pendientes[n];
+    if (onProgress) onProgress(n + 1, pendientes.length);
+    const posicion = fotosOrdenadas.indexOf(f);
     const fd = new FormData();
     fd.append('archivos', f.file);
     const r = await apiFetch(`${API_BASE}/propiedades/${propId}/imagenes`,
       { method: 'POST', body: fd },
-      { timeoutMs: TIMEOUT_FOTO_MS, paso: `subir la foto ${i + 1}` });
+      { timeoutMs: TIMEOUT_FOTO_MS, paso: `subir la foto ${posicion + 1}` });
     const prop = await r.json();
     const url  = prop.imagenes[prop.imagenes.length - 1];  // upload endpoint appends
 
-    // Keep position; a retry won't re-upload it. The preview stays valid in the grid
-    // (revoked later by setFotos), so a re-render keeps showing the image.
-    fotosOrdenadas[i] = { tipo: 'existente', url, preview: f.preview };
-    urls.push(url);
+    // The preview stays valid for the grid (revoked later by setFotos)
+    const idx = fotosOrdenadas.indexOf(f);
+    if (idx !== -1) fotosOrdenadas[idx] = { tipo: 'existente', url, preview: f.preview };
   }
-  return urls;
+  if (pendientes.length && !arrastrandoFoto) renderFotos({ silencioso: true });
+  return fotosOrdenadas.filter(f => f.tipo === 'existente').map(f => f.url);
 }
 
 /* ─── Guardar propiedad ──────────────────── */
-async function saveForm(activa) {
-  const errEl   = document.getElementById('formErr');
-  const fm      = document.getElementById('propForm');
-  const btnId   = activa ? 'btnPublicar' : 'btnBorrador';
-  const saveBtn = document.getElementById(btnId);
-  errEl.hidden  = true;
+const CAMPO_POR_FALTANTE = {
+  'título': 'titulo', 'operación': 'operacion', 'tipo': 'tipo',
+  'precio': 'precio', 'dirección': 'direccion', 'precio final': 'precio_venta_final',
+};
 
-  const datos = {
-    titulo:        fm.elements.titulo.value.trim(),
+function numONull(v) {
+  const n = parseFloat(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function recolectarDatos() {
+  const fm = document.getElementById('propForm');
+  return {
+    titulo:        fm.elements.titulo.value.trim() || null,
     descripcion:   fm.elements.descripcion.value.trim() || null,
-    operacion:     fm.elements.operacion.value,
-    tipo:          fm.elements.tipo.value,
+    operacion:     fm.elements.operacion.value || null,
+    tipo:          fm.elements.tipo.value || null,
     antiguedad:    fm.elements.antiguedad.value || null,
-    precio:        parseFloat(fm.elements.precio.value),
+    precio:        numONull(fm.elements.precio.value),
     moneda:        fm.elements.moneda.value,
-    direccion:     fm.elements.direccion.value.trim(),
+    direccion:     fm.elements.direccion.value.trim() || null,
     barrio:        fm.elements.barrio.value.trim() || null,
-    lat:           parseFloat(document.getElementById('fieldLat').value) || null,
-    lng:           parseFloat(document.getElementById('fieldLng').value) || null,
+    lat:           numONull(document.getElementById('fieldLat').value),
+    lng:           numONull(document.getElementById('fieldLng').value),
     poligono_zona: document.getElementById('fieldPoligonoZona').value || null,
-    dimension_m2:  parseFloat(fm.elements.dimension_m2.value) || null,
-    activa,
+    dimension_m2:  numONull(fm.elements.dimension_m2.value),
 
-    superficie_cubierta:    parseFloat(fm.elements.superficie_cubierta.value)    || null,
-    superficie_descubierta: parseFloat(fm.elements.superficie_descubierta.value) || null,
-    superficie_total:       parseFloat(fm.elements.superficie_total.value)       || null,
-    cantidad_pisos:         parseInt(fm.elements.cantidad_pisos.value, 10)       || null,
+    superficie_cubierta:    numONull(fm.elements.superficie_cubierta.value),
+    superficie_descubierta: numONull(fm.elements.superficie_descubierta.value),
+    superficie_total:       numONull(fm.elements.superficie_total.value),
+    cantidad_pisos:         parseInt(fm.elements.cantidad_pisos.value, 10) || null,
     estado_propiedad:       fm.elements.estado_propiedad.value || null,
     estado_operacion:       fm.elements.estado_operacion.value || 'activa',
-    precio_venta_final:     parseFloat(fm.elements.precio_venta_final.value) || null,
+    precio_venta_final:     numONull(fm.elements.precio_venta_final.value),
     moneda_venta_final:     fm.elements.moneda_venta_final.value || null,
   };
+}
 
-  if (!datos.titulo || !datos.operacion || !datos.tipo || !datos.precio || !datos.direccion) {
-    errEl.textContent = 'Completá los campos obligatorios: título, operación, tipo, precio y dirección.';
-    errEl.hidden = false;
-    errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    return;
-  }
+/** Same required fields as the backend (calcular_campos_faltantes). */
+function faltantesParaPublicar(d) {
+  const faltan = [];
+  if (!d.titulo)     faltan.push('título');
+  if (!d.operacion)  faltan.push('operación');
+  if (!d.tipo)       faltan.push('tipo');
+  if (!(d.precio > 0)) faltan.push('precio');
+  if (!d.direccion)  faltan.push('dirección');
+  if (['alquilada', 'vendida'].includes(d.estado_operacion) && d.precio_venta_final == null) faltan.push('precio final');
+  return faltan;
+}
 
-  if (['alquilada','vendida'].includes(datos.estado_operacion) && !datos.precio_venta_final) {
-    errEl.textContent = 'Completá el precio final para marcar la propiedad como alquilada o vendida.';
-    errEl.hidden = false;
-    errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    return;
+function limpiarResaltados() {
+  document.querySelectorAll('#propForm .field-missing').forEach(el => el.classList.remove('field-missing'));
+}
+
+function resaltarFaltantes(faltan) {
+  limpiarResaltados();
+  const fm = document.getElementById('propForm');
+  let primero = null;
+  faltan.forEach(lbl => {
+    const el = fm.elements[CAMPO_POR_FALTANTE[lbl]];
+    if (!el) return;
+    el.classList.add('field-missing');
+    primero = primero || el;
+  });
+  mostrarErrorForm(`Para publicar falta completar: ${faltan.join(', ')}. Los campos están marcados en rojo.`, false);
+  if (primero) primero.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+document.getElementById('propForm').addEventListener('input', (e) => e.target.classList.remove('field-missing'));
+document.getElementById('propForm').addEventListener('change', (e) => e.target.classList.remove('field-missing'));
+
+/** modo: 'publicar' (validates required fields) | 'borrador' (saves whatever there is). */
+async function saveForm(modo) {
+  const publicar = modo !== 'borrador';
+  const saveBtn  = document.getElementById(publicar ? 'btnPublicar' : 'btnBorrador');
+  document.getElementById('formErr').hidden = true;
+
+  const datos = recolectarDatos();
+  if (publicar) {
+    if (datos.estado_operacion === 'borrador') datos.estado_operacion = 'activa';
+    const faltan = faltantesParaPublicar(datos);
+    if (faltan.length) { resaltarFaltantes(faltan); return; }
+    limpiarResaltados();
+  } else {
+    datos.estado_operacion = 'borrador';
   }
 
   if (guardandoForm) return;  // ignore double clicks while a save is running
@@ -1605,16 +1739,33 @@ async function saveForm(activa) {
   const botones = ['btnPublicar', 'btnBorrador'].map(id => document.getElementById(id));
   const textos  = botones.map(b => b.textContent);
   botones.forEach(b => { b.disabled = true; });
-  saveBtn.textContent = 'Guardando…';
 
   let reintentar = false;
   try {
-    await ejecutarGuardado(datos, (txt) => { saveBtn.textContent = txt; });
+    if (guardadoEnCurso) {  // a background autosave is running: wait for it, then save on top
+      saveBtn.textContent = 'Terminando autoguardado…';
+      await guardadoEnCurso.catch(() => {});
+    }
+    saveBtn.textContent = 'Guardando…';
+    const version  = cambiosVersion;
+    const claveAnt = claveAutosave();
+    const saved    = await correrGuardado(datos, (txt) => { saveBtn.textContent = txt; });
+    marcarGuardadoEnServidor(version, claveAnt, saved);
+
+    if (cambiosVersion > version) {
+      // The user kept editing while saving: don't close and lose those edits
+      mostrarErrorForm('Se guardó, pero hiciste cambios mientras se guardaba. Tocá el botón de nuevo para guardarlos también.', false);
+      return;
+    }
     closeModal();
     loadProps();
+    if (!publicar) mostrarToast('Guardado como borrador. Podés retomarlo cuando quieras.');
   } catch (err) {
     console.error('[admin] Error al guardar la propiedad:', err);
-    if (err instanceof ApiError && err.kind === 'auth') {
+    const faltan = err instanceof ApiError && err.status === 422 && err.body?.detail?.campos_faltantes;
+    if (faltan) {
+      resaltarFaltantes(faltan);
+    } else if (err instanceof ApiError && err.kind === 'auth') {
       mostrarErrorForm('Tu sesión venció, volvé a ingresar.', false);
       reintentar = await pedirReLogin();
       if (!reintentar) mostrarErrorForm('Tu sesión venció, volvé a ingresar. Tocá el botón de nuevo cuando quieras reintentar; no se perdió nada.', false);
@@ -1626,14 +1777,25 @@ async function saveForm(activa) {
   } finally {
     guardandoForm = false;
     botones.forEach((b, i) => { b.disabled = false; b.textContent = textos[i]; });
+    actualizarBotonesForm();
   }
   if (reintentar) {
     document.getElementById('formErr').hidden = true;
-    return saveForm(activa);
+    return saveForm(modo);
   }
 }
 
-let guardandoForm = false;
+let guardandoForm   = false;
+let guardadoEnCurso = null;   // Promise of the save currently running (manual or autosave)
+
+/** Runs ejecutarGuardado making sure two saves never overlap. */
+function correrGuardado(datos, setEstado) {
+  const p = ejecutarGuardado(datos, setEstado).finally(() => {
+    if (guardadoEnCurso === p) guardadoEnCurso = null;
+  });
+  guardadoEnCurso = p;
+  return p;
+}
 
 /**
  * Runs the save steps in order. Safe to call again after a failure:
@@ -1649,6 +1811,7 @@ async function ejecutarGuardado(datos, setEstado) {
 
   // From here on the property exists: further saves must edit, not duplicate it
   editId = saved.id;
+  estadoServidorForm = saved.estado_operacion;
 
   // Photos: upload new ones in order, then persist the full ordered list
   if (fotosOrdenadas.length || (saved.imagenes || []).length) {
@@ -1661,6 +1824,22 @@ async function ejecutarGuardado(datos, setEstado) {
   return saved;
 }
 
+/** After a successful server save: the local autosave for that state is no longer needed (B4). */
+function marcarGuardadoEnServidor(version, claveAnterior, saved) {
+  versionGuardadaServidor = Math.max(versionGuardadaServidor, version);
+  if (cambiosVersion > version) {
+    // Newer edits exist only locally: re-save them under the current key before dropping the old one
+    guardarLocal();
+    if (claveAnterior !== claveAutosave()) borrarAutosaveLocal(claveAnterior);
+  } else {
+    borrarAutosaveLocal(claveAnterior);
+    borrarAutosaveLocal(claveAutosave());
+    versionGuardadaLocal = cambiosVersion;
+  }
+  if (saved) document.getElementById('formTitle').textContent =
+    saved.estado_operacion === 'borrador' ? 'Continuar carga (borrador)' : 'Editar propiedad';
+}
+
 function mostrarErrorForm(msg, conReintento) {
   const errEl = document.getElementById('formErr');
   errEl.innerHTML = escH(msg) + (conReintento
@@ -1668,6 +1847,261 @@ function mostrarErrorForm(msg, conReintento) {
     : '');
   errEl.hidden = false;
 }
+
+function mostrarToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.hidden = false;
+  clearTimeout(mostrarToast._t);
+  mostrarToast._t = setTimeout(() => { t.hidden = true; }, 5000);
+}
+
+/* "Guardar y terminar después" only makes sense for new properties or drafts:
+   on a published property it would unpublish it. */
+let estadoServidorForm = null;  // estado_operacion as stored on the server (null = not saved yet)
+
+function actualizarBotonesForm() {
+  const esBorradorOFresca = !editId || estadoServidorForm === 'borrador';
+  document.getElementById('btnBorrador').hidden = !esBorradorOFresca;
+}
+
+/* ═══════════════════════════════════════════
+   AUTOGUARDADO
+   - Local (B): localStorage para campos/orden + IndexedDB para fotos aún no subidas.
+   - Servidor (C2): cada 60 s, como borrador, solo para propiedades nuevas o borradores.
+═══════════════════════════════════════════ */
+const AUTOSAVE_PREFIX       = 'lgraf_autosave_';
+const AUTOSAVE_DEBOUNCE_MS  = 2000;
+const AUTOSAVE_SERVIDOR_MS  = 60000;
+
+let cargandoForm            = false;  // true while open/restore fills the form (not user changes)
+let cambiosVersion          = 0;      // bumps on every user change
+let versionGuardadaLocal    = 0;
+let versionGuardadaServidor = 0;
+let autosaveTimer           = null;
+let autosaveServidorTimer   = null;
+let arrastrandoFoto         = false;
+
+function claveAutosave() {
+  return AUTOSAVE_PREFIX + (editId ? `edit_${editId}` : 'new');
+}
+
+function hayCambiosSinGuardar() {
+  return !document.getElementById('formModal').hidden && cambiosVersion > versionGuardadaServidor;
+}
+
+function marcarCambio() {
+  if (cargandoForm || document.getElementById('formModal').hidden) return;
+  cambiosVersion++;
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(guardarLocal, AUTOSAVE_DEBOUNCE_MS);
+}
+
+document.getElementById('propForm').addEventListener('input',  marcarCambio);
+document.getElementById('propForm').addEventListener('change', marcarCambio);
+
+function snapshotForm() {
+  const campos = {};
+  for (const el of document.getElementById('propForm').elements) {
+    if (!el.name || el.type === 'file') continue;
+    campos[el.name] = el.type === 'checkbox' ? el.checked : el.value;
+  }
+  return {
+    v: 1, ts: Date.now(), editId, campos,
+    fotos: fotosOrdenadas.map(f => f.tipo === 'existente'
+      ? { tipo: 'existente', url: f.url }
+      : { tipo: 'nueva', id: f.id, name: f.file.name }),
+  };
+}
+
+/** Writes the snapshot to localStorage and any not-yet-stored new photo to IndexedDB. */
+async function guardarLocal() {
+  clearTimeout(autosaveTimer);
+  if (document.getElementById('formModal').hidden) return;
+  const clave   = claveAutosave();
+  const version = cambiosVersion;
+  try {
+    localStorage.setItem(clave, JSON.stringify(snapshotForm()));
+  } catch (err) {
+    console.warn('[admin] No se pudo autoguardar en el navegador:', err);
+    return;
+  }
+  versionGuardadaLocal = Math.max(versionGuardadaLocal, version);
+  for (const f of fotosOrdenadas) {
+    if (f.tipo !== 'nueva' || f.idbClave === clave) continue;
+    try {
+      await idbPut(`${clave}|${f.id}`, { blob: f.file, name: f.file.name, type: f.file.type });
+      f.idbClave = clave;
+    } catch (err) {
+      console.warn('[admin] No se pudo guardar la foto en el navegador (IndexedDB):', err);
+    }
+  }
+}
+
+function leerAutosave(clave) {
+  try {
+    const snap = JSON.parse(localStorage.getItem(clave) || 'null');
+    return snap && snap.v === 1 ? snap : null;
+  } catch { return null; }
+}
+
+function borrarAutosaveLocal(clave) {
+  try { localStorage.removeItem(clave); } catch { /* storage unavailable */ }
+  idbBorrarPrefijo(`${clave}|`).catch(err => console.warn('[admin] IndexedDB:', err));
+}
+
+function haceCuanto(ts) {
+  const min = Math.round((Date.now() - ts) / 60000);
+  if (min < 1)  return 'hace menos de un minuto';
+  if (min < 60) return `hace ${min} min`;
+  const h = Math.round(min / 60);
+  if (h < 24)   return `hace ${h} h`;
+  const d = Math.round(h / 24);
+  return d === 1 ? 'hace 1 día' : `hace ${d} días`;
+}
+
+/** Called by openCreate/openEdit once the form is filled. */
+function prepararAutosave() {
+  cambiosVersion = versionGuardadaLocal = versionGuardadaServidor = 0;
+  clearTimeout(autosaveTimer);
+  limpiarResaltados();
+  document.getElementById('autosaveStatus').textContent = '';
+  actualizarBotonesForm();
+
+  const banner = document.getElementById('autosaveBanner');
+  const snap   = leerAutosave(claveAutosave());
+  banner.hidden = !snap;
+  if (snap) {
+    document.getElementById('autosaveBannerTxt').textContent =
+      `Tenés una carga sin terminar (guardada ${haceCuanto(snap.ts)}).`;
+  }
+  clearInterval(autosaveServidorTimer);
+  autosaveServidorTimer = setInterval(autosaveServidor, AUTOSAVE_SERVIDOR_MS);
+}
+
+function descartarAutosave() {
+  borrarAutosaveLocal(claveAutosave());
+  document.getElementById('autosaveBanner').hidden = true;
+}
+
+/** Restores the local autosave into the form, in the same point it was left. */
+async function retomarAutosave() {
+  const clave = claveAutosave();
+  const snap  = leerAutosave(clave);
+  document.getElementById('autosaveBanner').hidden = true;
+  if (!snap) return;
+  cargandoForm = true;
+  try {
+    const fm = document.getElementById('propForm');
+    for (const [name, val] of Object.entries(snap.campos)) {
+      const el = fm.elements[name];
+      if (!el || el.type === 'file') continue;
+      if (el.type === 'checkbox') el.checked = !!val; else el.value = val ?? '';
+    }
+    document.getElementById('seccionPrecioFinal').hidden =
+      !['alquilada', 'vendida'].includes(fm.elements.estado_operacion.value);
+    lastGeocodedDireccion = fm.elements.direccion.value.trim();
+
+    const lat = parseFloat(snap.campos.lat), lng = parseFloat(snap.campos.lng);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      if (!mapaPicker) initMapPicker();
+      setMarker(lat, lng, true, true);
+    } else {
+      if (pickerMarker && mapaPicker) { mapaPicker.removeLayer(pickerMarker); pickerMarker = null; }
+      updateCoordsLabel(null, null);
+    }
+
+    const showPoly = ['chacra_campo', 'quinta'].includes(fm.elements.tipo.value);
+    document.getElementById('seccionPoligono').hidden = !showPoly;
+    if (showPoly) {
+      if (!mapPoligono) initMapPoligono(); else mapPoligono.invalidateSize();
+      limpiarPoligono();
+      if (snap.campos.poligono_zona) restorePoligono(snap.campos.poligono_zona);
+    }
+
+    let perdidas = 0;
+    const items = [];
+    for (const f of snap.fotos || []) {
+      if (f.tipo === 'existente') { items.push({ tipo: 'existente', url: f.url }); continue; }
+      let rec = null;
+      try { rec = await idbGet(`${clave}|${f.id}`); } catch (err) { console.warn('[admin] IndexedDB:', err); }
+      if (!rec) { perdidas++; continue; }
+      const file = new File([rec.blob], rec.name, { type: rec.type });
+      items.push({ tipo: 'nueva', id: f.id, file, preview: URL.createObjectURL(file), idbClave: clave });
+    }
+    setFotos(items);
+    if (perdidas) mostrarErrorForm(`Se recuperó la carga, pero ${perdidas === 1 ? '1 foto nueva no se pudo recuperar' : perdidas + ' fotos nuevas no se pudieron recuperar'}: volvé a agregarla${perdidas === 1 ? '' : 's'}.`, false);
+  } finally {
+    cargandoForm = false;
+  }
+  // Restored data is not on the server yet: count it as unsaved changes
+  cambiosVersion++;
+  versionGuardadaLocal = cambiosVersion;
+}
+
+/** C2: silent server autosave as a draft. Never runs on published properties. */
+async function autosaveServidor() {
+  if (document.getElementById('formModal').hidden) return;
+  if (guardandoForm || guardadoEnCurso || reloginPendiente || arrastrandoFoto) return;
+  if (editId && estadoServidorForm !== 'borrador') return;
+  if (cambiosVersion <= versionGuardadaServidor) return;
+  const datos = recolectarDatos();
+  if (!datos.direccion && !datos.titulo && datos.precio == null) return;
+  datos.estado_operacion = 'borrador';
+
+  const version  = cambiosVersion;
+  const claveAnt = claveAutosave();
+  try {
+    const saved = await correrGuardado(datos, () => {});
+    marcarGuardadoEnServidor(version, claveAnt, saved);
+    actualizarBotonesForm();
+    const hora = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('autosaveStatus').textContent = `Borrador guardado a las ${hora}`;
+    loadProps();
+  } catch (err) {
+    // Silent on purpose: retried on the next cycle (the manual save shows errors)
+    console.warn('[admin] Autoguardado en el servidor falló; se reintenta en el próximo ciclo.', err);
+  }
+}
+
+// B5: browser warning when leaving with unsaved changes (and flush the local copy)
+window.addEventListener('beforeunload', (e) => {
+  if (!hayCambiosSinGuardar()) return;
+  if (cambiosVersion > versionGuardadaLocal) guardarLocal();
+  e.preventDefault();
+  e.returnValue = '';
+});
+
+/* ─── IndexedDB (fotos nuevas aún no subidas) ─── */
+let idbPromesa = null;
+function idbAbrir() {
+  if (!idbPromesa) {
+    idbPromesa = new Promise((resolve, reject) => {
+      if (!window.indexedDB) return reject(new Error('IndexedDB no disponible'));
+      const req = indexedDB.open('lgraf_admin', 1);
+      req.onupgradeneeded = () => req.result.createObjectStore('fotos');
+      req.onsuccess = () => resolve(req.result);
+      req.onerror   = () => reject(req.error);
+    }).catch(err => { idbPromesa = null; throw err; });
+  }
+  return idbPromesa;
+}
+
+async function idbTx(modo, fn) {
+  const db = await idbAbrir();
+  return new Promise((resolve, reject) => {
+    const tx  = db.transaction('fotos', modo);
+    const req = fn(tx.objectStore('fotos'));
+    tx.oncomplete = () => resolve(req ? req.result : undefined);
+    tx.onerror    = () => reject(tx.error);
+    tx.onabort    = () => reject(tx.error);
+  });
+}
+
+const idbPut = (clave, valor) => idbTx('readwrite', st => st.put(valor, clave));
+const idbGet = (clave)        => idbTx('readonly',  st => st.get(clave));
+const idbBorrarPrefijo = (prefijo) =>
+  idbTx('readwrite', st => st.delete(IDBKeyRange.bound(prefijo, prefijo + '￿')));
 
 /* ═══════════════════════════════════════════
    BUSCAR PARA CLIENTE
@@ -1742,7 +2176,7 @@ async function buscarParaCliente() {
     const r = await fetch(`${API_BASE}/propiedades?${params.toString()}`, { headers: authHdr() });
     if (r.status === 401) { logout(); return; }
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    let items = await r.json();
+    let items = (await r.json()).filter(p => p.estado_operacion !== 'borrador');
 
     // Filtros adicionales (no soportados por la API): barrio, ambientes, superficie
     const barrio = document.getElementById('bcBarrio').value.trim().toLowerCase();
