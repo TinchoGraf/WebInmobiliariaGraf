@@ -9,6 +9,12 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./inmobiliaria.db")
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
+# Sin "+driver", SQLAlchemy elige el driver por defecto según su versión (2.1 usa psycopg v3,
+# que no instalamos). Forzamos psycopg2 (psycopg2-binary en requirements.txt).
+# Si la URL ya trae un driver explícito (postgresql+algo://), se respeta.
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
+
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
