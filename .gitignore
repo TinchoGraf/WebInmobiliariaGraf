@@ -44,3 +44,5 @@ node_modules/
 *.key
 *.p12
 *.pfx
+# Backups locales de mensajes (datos personales de contacto)
+backend/backup/*.jsonl
